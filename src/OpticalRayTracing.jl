@@ -253,15 +253,17 @@ function raypoints(lens::Lens, system::System)
     end
     x[end] = x[end-1] + system.f
     y0 = zeros(k)
-    y1 = marginal[:,1]
+    y1 = @view marginal[:,1]
     y2 = -y1
     nū = chief[1,2]
     ȳ1 = chief[2,1]
-    ȳ2 = y1[1] - nū * system.EP.t
-    ȳ3 = -y1[1] - nū * system.EP.t
+    y11 = y1[1]
+    y21 = y2[1]
+    ȳ2 = ȳ1 + y11
+    ȳ3 = ȳ1 + y21
     ȳo1 = ȳ1 + nū * d
-    ȳo2 = ȳ2 + nū * d
-    ȳo3 = ȳ3 + nū * d
+    ȳo2 = ȳo1 + y11
+    ȳo3 = ȳo1 + y21
     ȳ = [ȳo1; @view(chief[begin+1:end,1])]
     ȳ′ = chief[end,1]
     y3 = [@view(raytrace(lens, ȳ2, nū)[:,1]); ȳ′]
