@@ -245,13 +245,13 @@ function raypoints(lens::Lens, system::System)
     s = 0.1
     d = -l * s
     at_objective = iszero(τ[1])
-    x = Vector{Float64}(undef, k)
-    x[1] = at_objective ? d : 0.0
-    x[2] = at_objective ? 0.0 : τ[1]
+    z = Vector{Float64}(undef, k)
+    z[1] = at_objective ? d : 0.0
+    z[2] = at_objective ? 0.0 : τ[1]
     for i = 2:lastindex(τ)
-        x[i+1] = x[i] + τ[i]
+        z[i+1] = z[i] + τ[i]
     end
-    x[end] = x[end-1] + system.f
+    z[end] = z[end-1] + system.f
     y0 = zeros(k)
     y1 = @view marginal[:,1]
     y2 = -y1
@@ -270,7 +270,7 @@ function raypoints(lens::Lens, system::System)
     y4 = [@view(raytrace(lens, ȳ3, nū)[:,1]); ȳ′]
     y3[1] = ȳo2
     y4[1] = ȳo3
-    return x, y0, y1, y2, ȳ, y3, y4
+    return z, y0, y1, y2, ȳ, y3, y4
 end
 
 function raypoints(lens::Lens, a, h′ = -0.5)
@@ -282,12 +282,18 @@ end
 # TODO: create a recipe
 function rayplot(lens::Lens, system::System)
     fig = Main.Figure()
-    axis = Main.Axis(fig[1,1])
-    x, y... = raypoints(lens, system)
+    axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
+    z, y... = raypoints(lens, system)
+    i = 0
     for yi in y
-        Main.scatter!(axis, x, yi)
-        Main.lines!(axis, x, yi)
+        i += 1
+        color = i > 3 ? :green : :blue
+        Main.scatter!(axis, z, yi; color)
+        Main.lines!(axis, z, yi; color)
     end
+    zf = z[end]
+    yf = y[4][end]
+    Main.lines!(axis, [zf for i = 1:2], [-yf, yf]; color = :black)
     Main.DataInspector(fig)
     return fig
 end
