@@ -213,16 +213,21 @@ end
 solve(surfaces, a, h′ = -1.0) = solve(construct(surfaces), a, h′)
 
 function Base.show(io::IO, system::T) where T <: System
+    if haskey(io, :typeinfo)
+        print(io, "f: ")
+        show(IOContext(io, :compact => true), system.f)
+        return
+    end
     for property in fieldnames(T)
         property === :rays && break
         value = getproperty(system, property)
-        @printf("\n%4s: ", property)
+        @printf(io, "\n%4s: ", property)
         if typeof(value) === Pupil
-            @printf("D = %.4f, t = %.4f", value.D, value.t)
+            @printf(io, "D = %.4f, t = %.4f", value.D, value.t)
         elseif property === :stop
-            @printf("%d", value)
+            @printf(io, "%d", value)
         else
-            @printf("%.4f", value)
+            @printf(io, "%.4f", value)
         end
     end
     return
