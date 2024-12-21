@@ -100,20 +100,20 @@ function transfer(y, ω, τ, ϕ)
     return y′, ω′
 end
 
-extend(A, t, t′) = [1.0 t′; 0.0 1.0] * A * [1.0 t; 0.0 1.0]
+extend(A, τ, τ′) = [1.0 τ′; 0.0 1.0] * A * [1.0 τ; 0.0 1.0]
 
-transfer(A::Matrix, v::Vector, t, t′) = extend(A, t, t′) * v
-transfer(system::System, v::Vector, t, t′) = transfer(system.A, v, t, t′)
-transfer(A::TransferMatrix, v::Vector, t, t′) = transfer(A.A, v, t, t′)
+transfer(A::Matrix, v::Vector, τ, τ′) = extend(A, τ, τ′) * v
+transfer(system::System, v::Vector, τ, τ′) = transfer(system.A, v, τ, τ′)
+transfer(A::TransferMatrix, v::Vector, τ, τ′) = transfer(A.A, v, τ, τ′)
 
-reverse_transfer(A::Matrix, v::Vector, t′, t) = extend(A, t, t′) \ v
+reverse_transfer(A::Matrix, v::Vector, τ′, τ) = extend(A, τ, τ′) \ v
 
-function reverse_transfer(system::System, v::Vector, t′, t)
-    reverse_transfer(system.A, v, t′, t)
+function reverse_transfer(system::System, v::Vector, τ′, τ)
+    reverse_transfer(system.A, v, τ′, τ)
 end
 
-function reverse_transfer(A::TransferMatrix, v::Vector, t′, t)
-    reverse_transfer(A.A, v, t′, t)
+function reverse_transfer(A::TransferMatrix, v::Vector, τ′, τ)
+    reverse_transfer(A.A, v, τ′, τ)
 end
 
 function flatten(transfer_matrix::TransferMatrix)
