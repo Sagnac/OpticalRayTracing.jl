@@ -310,8 +310,10 @@ function rayplot(surfaces::Matrix{Float64}, system::System)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::Vector, h′ = -0.5)
+    n = @view surfaces[:,3]
+    lens = construct(surfaces)
     system = solve(lens, a, h′)
-    rayplot(surfaces, system)
+    rayplot(n, lens, system)
 end
 
 end
