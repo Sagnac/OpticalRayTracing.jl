@@ -210,7 +210,7 @@ function solve(lens::Lens, a, h′ = -0.5)
                   TransferMatrix(lens))
 end
 
-solve(surfaces, a, h′ = -1.0) = solve(construct(surfaces), a, h′)
+solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
 
 function Base.show(io::IO, system::T) where T <: System
     if haskey(io, :typeinfo)
@@ -298,7 +298,7 @@ function rayplot(n::Vector, lens::Lens, system::System)
     return fig
 end
 
-function rayplot(n::Vector, lens::Lens, a::Vector, h′ = -1.0)
+function rayplot(n::Vector, lens::Lens, a::Vector, h′ = -0.5)
     system = solve(lens, a, h′)
     rayplot(n, lens, system)
 end
