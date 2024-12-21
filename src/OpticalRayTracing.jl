@@ -241,22 +241,22 @@ function Base.getproperty(system::System, property::Symbol)
     end
 end
 
-function raypoints(lens::Lens, system::System)
+function raypoints(n::Vector, lens::Lens, system::System)
     (; A) = lens
     (; marginal, chief) = system.rays
-    τ = @view A[:,1]
-    k = length(τ) + 2
-    l = sum(τ)
+    t = @view(A[:,1]) .* n
+    k = length(t) + 2
+    l = sum(t)
     s = 0.1
-    d = -l * s
-    at_objective = iszero(τ[1])
+    d = -l * s / n[1]
+    at_objective = iszero(t[1])
     z = Vector{Float64}(undef, k)
     z[1] = at_objective ? d : 0.0
-    z[2] = at_objective ? 0.0 : τ[1]
-    for i = 2:lastindex(τ)
-        z[i+1] = z[i] + τ[i]
+    z[2] = at_objective ? 0.0 : t[1]
+    for i = 2:lastindex(t)
+        z[i+1] = z[i] + t[i]
     end
-    z[end] = z[end-1] + system.f
+    z[end] = z[end-1] + system.EBFD * n[end]
     y0 = zeros(k)
     y1 = @view marginal[:,1]
     y2 = -y1
@@ -278,17 +278,12 @@ function raypoints(lens::Lens, system::System)
     return z, y0, y1, y2, ȳ, y3, y4
 end
 
-function raypoints(lens::Lens, a, h′ = -0.5)
-    system = solve(lens, a, h′)
-    raypoints(lens, system)
-end
-
 # requires Makie
 # TODO: create a recipe
-function rayplot(lens::Lens, system::System)
+function rayplot(n::Vector, lens::Lens, system::System)
     fig = Main.Figure()
     axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
-    z, y... = raypoints(lens, system)
+    z, y... = raypoints(n, lens, system)
     i = 0
     for yi in y
         i += 1
@@ -303,9 +298,20 @@ function rayplot(lens::Lens, system::System)
     return fig
 end
 
-function rayplot(lens, a, h′ = -1.0)
+function rayplot(n::Vector, lens::Lens, a::Vector, h′ = -1.0)
     system = solve(lens, a, h′)
-    rayplot(lens, system)
+    rayplot(n, lens, system)
+end
+
+function rayplot(surfaces::Matrix{Float64}, system::System)
+    n = @view surfaces[:,3]
+    lens = construct(surfaces)
+    rayplot(n, lens, system)
+end
+
+function rayplot(surfaces::Matrix{Float64}, a::Vector, h′ = -0.5)
+    system = solve(lens, a, h′)
+    rayplot(surfaces, system)
 end
 
 end
