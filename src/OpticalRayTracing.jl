@@ -185,7 +185,7 @@ function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
     return chief_ray
 end
 
-function solve(lens::Lens, a, h′ = -0.5)
+function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     marginal_ray, stop, f, EBFD = trace_marginal_ray(lens, a)
     chief_ray = trace_chief_ray(lens, stop, EBFD, h′)
     ȳ = chief_ray[begin+1,1]
