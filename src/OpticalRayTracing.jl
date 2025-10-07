@@ -304,14 +304,14 @@ function rayplot(n::AbstractVector, lens::Lens, a::AbstractVector, h′ = -0.5)
 end
 
 function rayplot(surfaces::Matrix{Float64}, system::System)
-    n = @view surfaces[:,3]
     lens = construct(surfaces)
+    n = @view surfaces[begin:size(lens.A, 1), 3]
     rayplot(n, lens, system)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
-    n = @view surfaces[:,3]
     lens = construct(surfaces)
+    n = @view surfaces[begin:size(lens.A, 1), 3]
     system = solve(lens, a, h′)
     rayplot(n, lens, system)
 end
