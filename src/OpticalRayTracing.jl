@@ -241,7 +241,7 @@ function Base.getproperty(system::System, property::Symbol)
     end
 end
 
-function raypoints(n::Vector, lens::Lens, system::System)
+function raypoints(n::AbstractVector, lens::Lens, system::System)
     (; A) = lens
     (; marginal, chief) = system.rays
     t = @view(A[:,1]) .* n
@@ -280,7 +280,7 @@ end
 
 # requires Makie
 # TODO: create a recipe
-function rayplot(n::Vector, lens::Lens, system::System)
+function rayplot(n::AbstractVector, lens::Lens, system::System)
     fig = Main.Figure()
     axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
     z, y... = raypoints(n, lens, system)
@@ -298,7 +298,7 @@ function rayplot(n::Vector, lens::Lens, system::System)
     return fig
 end
 
-function rayplot(n::Vector, lens::Lens, a::Vector, h′ = -0.5)
+function rayplot(n::AbstractVector, lens::Lens, a::AbstractVector, h′ = -0.5)
     system = solve(lens, a, h′)
     rayplot(n, lens, system)
 end
@@ -309,7 +309,7 @@ function rayplot(surfaces::Matrix{Float64}, system::System)
     rayplot(n, lens, system)
 end
 
-function rayplot(surfaces::Matrix{Float64}, a::Vector, h′ = -0.5)
+function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
     n = @view surfaces[:,3]
     lens = construct(surfaces)
     system = solve(lens, a, h′)
