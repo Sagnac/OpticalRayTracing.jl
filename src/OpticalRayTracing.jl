@@ -244,7 +244,7 @@ end
 function raypoints(n::AbstractVector, lens::Lens, system::System)
     (; A) = lens
     (; marginal, chief) = system.rays
-    t = @view(A[:,1]) .* n
+    t = map(*, @view(A[:,1]), @view n[begin:end-1])
     k = length(t) + 2
     l = sum(t)
     s = 0.1
@@ -304,14 +304,14 @@ function rayplot(n::AbstractVector, lens::Lens, a::AbstractVector, h′ = -0.5)
 end
 
 function rayplot(surfaces::Matrix{Float64}, system::System)
+    n = @view surfaces[:,3]
     lens = construct(surfaces)
-    n = @view surfaces[begin:size(lens.A, 1), 3]
     rayplot(n, lens, system)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
+    n = @view surfaces[:,3]
     lens = construct(surfaces)
-    n = @view surfaces[begin:size(lens.A, 1), 3]
     system = solve(lens, a, h′)
     rayplot(n, lens, system)
 end
