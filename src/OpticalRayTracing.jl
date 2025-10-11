@@ -213,9 +213,13 @@ end
 solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
 
 function Base.show(io::IO, system::T) where T <: System
+    print(io, "f: ")
+    show(IOContext(io, :compact => true), system.f)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
     if haskey(io, :typeinfo)
-        print(io, "f: ")
-        show(IOContext(io, :compact => true), system.f)
+        show(io, system)
         return
     end
     for property in fieldnames(T)
