@@ -217,9 +217,8 @@ solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
 function vignetting(system::System, a::AbstractVector)
     (; rays) = system
     k = length(a)
-    ȳ = @view(rays.chief[begin+1:end-1,1])
-    y = abs.(@view(raypoints(ones(k+1), system)[end][begin+1:end-1]) .- ȳ)
-    ȳ = abs.(ȳ)
+    ȳ = abs.(@view(rays.chief[begin+1:end-1,1]))
+    y = abs.(@view(rays.marginal[begin+1:end-1,1]))
     vig = Matrix{Float64}(undef, k, 4)
     vig[:,1] .= a
     unvignetted = vig[:,2] .= y .+ ȳ
@@ -302,19 +301,10 @@ function raypoints(n::AbstractVector, system::System)
     y2 = -y1
     nū = chief[1,2]
     ȳ1 = chief[2,1]
-    y11 = y1[1]
-    y21 = y2[1]
-    ȳ2 = ȳ1 + y11
-    ȳ3 = ȳ1 + y21
     ȳo1 = ȳ1 + nū * d
-    ȳo2 = ȳo1 + y11
-    ȳo3 = ȳo1 + y21
     ȳ = [ȳo1; @view(chief[begin+1:end,1])]
-    ȳ′ = chief[end,1]
-    y3 = [@view(raytrace(lens, ȳ2, nū)[:,1]); ȳ′]
-    y4 = [@view(raytrace(lens, ȳ3, nū)[:,1]); ȳ′]
-    y3[1] = ȳo2
-    y4[1] = ȳo3
+    y3 = ȳ + y1
+    y4 = ȳ + y2
     return z, y0, y1, y2, ȳ, y3, y4
 end
 
