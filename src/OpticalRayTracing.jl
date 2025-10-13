@@ -116,8 +116,9 @@ function reverse_transfer(A::TransferMatrix, v::Vector, τ′, τ)
     reverse_transfer(A.A, v, τ′, τ)
 end
 
-function flatten(transfer_matrix::TransferMatrix)
-    (; A) = transfer_matrix
+flatten(transfer_matrix::TransferMatrix) = flatten(transfer_matrix.A)
+
+function flatten(A::Matrix)
     f = -inv(A[2,1])
     δ = (1.0 - A[2,2]) * f
     δ′ = (A[1,1] - 1.0) * f
