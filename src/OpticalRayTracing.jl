@@ -248,7 +248,7 @@ end
 function raypoints(n::AbstractVector, lens::Lens, system::System)
     (; A) = lens
     (; marginal, chief) = system.rays
-    t = map(*, @view(A[:,1]), @view n[begin:end-1])
+    t = map(*, @view(A[:,1]), @view(n[begin:end-1]))
     k = length(t) + 2
     l = sum(t)
     s = 0.1
