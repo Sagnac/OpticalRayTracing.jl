@@ -52,6 +52,7 @@ struct System
     XP::Pupil
     rays::OpticalRays
     transfer_matrix::TransferMatrix
+    lens::Lens
 end
 
 function ParaxialRays(rays::OpticalRays, n::Vector)
@@ -208,16 +209,16 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     FOV = 2atand(abs(h′ / f))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
                   OpticalRays(marginal_ray, chief_ray, H),
-                  TransferMatrix(lens))
+                  TransferMatrix(lens), lens)
 end
 
 solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
 
-function vignetting(lens::Lens, system::System, a::AbstractVector)
+function vignetting(system::System, a::AbstractVector)
     (; rays) = system
     k = length(a)
     ȳ = @view(rays.chief[begin+1:end-1,1])
-    y = abs.(@view(raypoints(ones(k+1), lens, system)[end][begin+1:end-1]) .- ȳ)
+    y = abs.(@view(raypoints(ones(k+1), system)[end][begin+1:end-1]) .- ȳ)
     ȳ = abs.(ȳ)
     vig = Matrix{Float64}(undef, k, 4)
     vig[:,1] .= a
@@ -279,7 +280,8 @@ function Base.getproperty(system::System, property::Symbol)
     end
 end
 
-function raypoints(n::AbstractVector, lens::Lens, system::System)
+function raypoints(n::AbstractVector, system::System)
+    (; lens) = system
     (; A) = lens
     (; marginal, chief) = system.rays
     t = map(*, @view(A[:,1]), @view(n[begin:end-1]))
@@ -318,10 +320,10 @@ end
 
 # requires Makie
 # TODO: create a recipe
-function rayplot(n::AbstractVector, lens::Lens, system::System)
+function rayplot(n::AbstractVector, system::System)
     fig = Main.Figure()
     axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
-    z, y... = raypoints(n, lens, system)
+    z, y... = raypoints(n, system)
     i = 0
     for yi in y
         i += 1
@@ -338,20 +340,19 @@ end
 
 function rayplot(n::AbstractVector, lens::Lens, a::AbstractVector, h′ = -0.5)
     system = solve(lens, a, h′)
-    rayplot(n, lens, system)
+    rayplot(n, system)
 end
 
 function rayplot(surfaces::Matrix{Float64}, system::System)
     n = @view surfaces[:,3]
-    lens = construct(surfaces)
-    rayplot(n, lens, system)
+    rayplot(n, system)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
     n = @view surfaces[:,3]
     lens = construct(surfaces)
     system = solve(lens, a, h′)
-    rayplot(n, lens, system)
+    rayplot(n, system)
 end
 
 end
