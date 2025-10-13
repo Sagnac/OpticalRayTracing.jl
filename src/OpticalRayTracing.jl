@@ -203,7 +203,7 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     EP = Pupil(abs(y) * 2, -ȳ / nū)
     H = nū * y
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
-    N = f / EP.D
+    N = abs(f / EP.D)
     FOV = 2atand(abs(h′ / f))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
                   OpticalRays(marginal_ray, chief_ray, H),
