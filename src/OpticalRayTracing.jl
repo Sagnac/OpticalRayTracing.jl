@@ -4,7 +4,7 @@ using Printf
 
 export TransferMatrix, Lens, construct, transfer, reverse_transfer, raytrace,
        trace_marginal_ray, trace_chief_ray, scale!, Rays, OpticalRays, ParaxialRays,
-       solve, flatten, raypoints, rayplot
+       solve, flatten, raypoints, rayplot, vignetting
 
 abstract type Rays end
 
@@ -212,6 +212,39 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
 end
 
 solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
+
+function vignetting(lens::Lens, system::System, a::AbstractVector)
+    (; rays) = system
+    k = length(a)
+    ȳ = @view(rays.chief[begin+1:end-1,1])
+    y = abs.(@view(raypoints(ones(k+1), lens, system)[end][begin+1:end-1]) .- ȳ)
+    ȳ = abs.(ȳ)
+    vig = Matrix{Float64}(undef, k, 4)
+    vig[:,1] .= a
+    unvignetted = vig[:,2] .= y .+ ȳ
+    half_vignetted = vig[:,3] .= max.(ȳ, y)
+    fully_vignetted = vig[:,4] .= max.(ȳ .- y, y)
+    a_unvig = a .≥ unvignetted
+    if all(a_unvig)
+        printstyled("\nUnvignetted.\n\n"; bold = true, color = :green)
+    else
+        full = findall(a .≤ fully_vignetted)
+        partial = setdiff(findall(.!a_unvig), full)
+        if !isempty(partial)
+            printstyled("\nPartially vignetted:\n"; bold = true, color = :yellow)
+            show(partial)
+            println('\n')
+        end
+        if !isempty(full)
+            printstyled("\nFully vignetted or limit:\n"; bold = true, color = :red)
+            show(full)
+            println('\n')
+        end
+    end
+    s = ' ' ^ 8
+    printstyled("a", s, "un", s, "half", s, "full\n"; bold = true, color = :cyan)
+    return vig
+end
 
 function Base.show(io::IO, system::T) where T <: System
     print(io, "f: ")
