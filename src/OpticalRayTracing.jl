@@ -3,10 +3,23 @@ module OpticalRayTracing
 using Printf
 
 export TransferMatrix, Lens, construct, transfer, reverse_transfer, raytrace,
-       trace_marginal_ray, trace_chief_ray, scale!, Rays, OpticalRays, ParaxialRays,
-       solve, flatten, raypoints, rayplot, vignetting
+       trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
+       solve, flatten, raypoints, rayplot, vignetting, slopes
 
-abstract type Rays end
+abstract type ParaxialRay end
+
+abstract type TangentialRay <: ParaxialRay end
+
+struct Marginal <: TangentialRay end
+
+struct Chief <: TangentialRay end
+
+struct Ray{T <: TangentialRay}
+    y::Vector{Float64}
+    nu::Vector{Float64}
+    ynu::Matrix{Float64}
+    Ray{T}(ynu) where T <: TangentialRay = new(eachcol(ynu)..., ynu)
+end
 
 struct TransferMatrix
     A::Matrix{Float64}
@@ -14,7 +27,10 @@ end
 
 struct Lens
     A::Matrix{Float64}
+    n::Vector{Float64}
 end
+
+slopes(ray::Ray, n) = map(/, ray.nu, n)
 
 function TransferMatrix(lens::Lens)
     (; A) = lens
@@ -28,19 +44,6 @@ struct Pupil
     t::Float64
 end
 
-struct OpticalRays <: Rays
-    marginal::Matrix{Float64}
-    chief::Matrix{Float64}
-    H::Float64
-end
-
-struct ParaxialRays <: Rays
-    marginal::Matrix{Float64}
-    chief::Matrix{Float64}
-    H::Float64
-    n::Vector{Float64}
-end
-
 struct System
     f::Float64
     EBFD::Float64
@@ -50,27 +53,11 @@ struct System
     stop::Int
     EP::Pupil
     XP::Pupil
-    rays::OpticalRays
+    marginal::Ray{Marginal}
+    chief::Ray{Chief}
+    H::Float64
     transfer_matrix::TransferMatrix
     lens::Lens
-end
-
-function ParaxialRays(rays::OpticalRays, n::Vector)
-    (; marginal, chief, H) = rays
-    marginal = copy(marginal)
-    chief = copy(chief)
-    @. marginal[:,2] /= n
-    @. chief[:,2] /= n
-    return ParaxialRays(marginal, chief, H, n)
-end
-
-function OpticalRays(rays::ParaxialRays)
-    (; marginal, chief, H, n) = rays
-    marginal = copy(marginal)
-    chief = copy(chief)
-    @. marginal[:,2] *= n
-    @. chief[:,2] *= n
-    return OpticalRays(marginal, chief, H)
 end
 
 function scale!(A::Matrix{Float64})
@@ -92,7 +79,7 @@ function construct(surfaces::Matrix{Float64})
     else
         A[end,2] = 0.0
     end
-    return Lens(A)
+    return Lens(A, n)
 end
 
 function transfer(y, ω, τ, ϕ)
@@ -126,9 +113,9 @@ function flatten(A::Matrix)
     return (; f, δ, δ′)
 end
 
-function rev(objective, stop)
+function rev(objective, stop, n)
     v = @view (reverse ∘ transpose)(view(objective, 1:stop, :))[begin+1:end-1]
-    Lens(reshape(v, 2, stop-1)')
+    Lens(reshape(v, 2, stop-1)', n)
 end
 
 function rev(objective_chief_ray)
@@ -173,10 +160,10 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
 end
 
 function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
-    (; A) = lens
+    (; A, n) = lens
     A = [A; [EBFD 0.0]]
-    rear_lens = Lens(@view(A[stop+1:end,:]))
-    objective = rev(A, stop)
+    rear_lens = Lens(@view(A[stop+1:end,:]), n)
+    objective = rev(A, stop, n)
     rear_chief_ray = raytrace(rear_lens, 0.0, -1.0)
     ȳ′ = rear_chief_ray[end,1]
     s = h′ / ȳ′
@@ -208,17 +195,17 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     N = abs(f / EP.D)
     FOV = 2atand(abs(h′ / f))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
-                  OpticalRays(marginal_ray, chief_ray, H),
+                  Ray{Marginal}(marginal_ray), Ray{Chief}(chief_ray), H,
                   TransferMatrix(lens), lens)
 end
 
 solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
 
 function vignetting(system::System, a::AbstractVector)
-    (; rays) = system
+    (; marginal, chief) = system
     k = length(a)
-    ȳ = abs.(@view(rays.chief[begin+1:end-1,1]))
-    y = abs.(@view(rays.marginal[begin+1:end-1,1]))
+    ȳ = abs.(@view(chief.y[begin+1:end-1]))
+    y = abs.(@view(marginal.y[begin+1:end-1]))
     vig = Matrix{Float64}(undef, k, 4)
     vig[:,1] .= a
     unvignetted = vig[:,2] .= y .+ ȳ
@@ -257,7 +244,7 @@ function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
         return
     end
     for property in fieldnames(T)
-        property === :rays && break
+        property === :marginal && break
         value = getproperty(system, property)
         @printf(io, "\n%4s: ", property)
         if typeof(value) === Pupil
@@ -271,6 +258,13 @@ function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
     return
 end
 
+Base.show(io::IO, ray::T) where T <: Ray = show(io, ray.ynu)
+
+function Base.show(io::IO, mime::S, ray::T) where {S <: MIME"text/plain", T <: Ray}
+    print(io, T, ".ynu:\n\n")
+    show(io, mime, ray.ynu)
+end
+
 function Base.getproperty(system::System, property::Symbol)
     if property === :A
         getfield(system, :transfer_matrix).A
@@ -279,10 +273,10 @@ function Base.getproperty(system::System, property::Symbol)
     end
 end
 
-function raypoints(n::AbstractVector, system::System)
+function raypoints(system::System)
     (; lens) = system
-    (; A) = lens
-    (; marginal, chief) = system.rays
+    (; A, n) = lens
+    (; marginal, chief) = system
     t = map(*, @view(A[:,1]), @view(n[begin:end-1]))
     k = length(t) + 2
     l = sum(t)
@@ -297,12 +291,12 @@ function raypoints(n::AbstractVector, system::System)
     end
     z[end] = z[end-1] + system.EBFD * n[end]
     y0 = zeros(k)
-    y1 = @view marginal[:,1]
+    y1 = marginal.y
     y2 = -y1
-    nū = chief[1,2]
-    ȳ1 = chief[2,1]
+    nū = chief.nu[1]
+    ȳ1 = chief.y[2]
     ȳo1 = ȳ1 + nū * d
-    ȳ = [ȳo1; @view(chief[begin+1:end,1])]
+    ȳ = [ȳo1; @view(chief.y[begin+1:end])]
     y3 = ȳ + y1
     y4 = ȳ + y2
     return z, y0, y1, y2, ȳ, y3, y4
@@ -310,10 +304,10 @@ end
 
 # requires Makie
 # TODO: create a recipe
-function rayplot(n::AbstractVector, system::System)
+function rayplot(system::System)
     fig = Main.Figure()
     axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
-    z, y... = raypoints(n, system)
+    z, y... = raypoints(system)
     i = 0
     for yi in y
         i += 1
@@ -328,21 +322,14 @@ function rayplot(n::AbstractVector, system::System)
     return fig
 end
 
-function rayplot(n::AbstractVector, lens::Lens, a::AbstractVector, h′ = -0.5)
+function rayplot(lens::Lens, a::AbstractVector, h′ = -0.5)
     system = solve(lens, a, h′)
-    rayplot(n, system)
-end
-
-function rayplot(surfaces::Matrix{Float64}, system::System)
-    n = @view surfaces[:,3]
-    rayplot(n, system)
+    rayplot(system)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
-    n = @view surfaces[:,3]
     lens = construct(surfaces)
-    system = solve(lens, a, h′)
-    rayplot(n, system)
+    rayplot(lens, a, h′)
 end
 
 end

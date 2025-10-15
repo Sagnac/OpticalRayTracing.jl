@@ -51,7 +51,7 @@ julia> system.transfer_matrix.A
 ```julia
 using GLMakie
 
-julia> rayplot(surfaces, system)
+julia> rayplot(system)
 ```
 
 ![rayplot](images/rayplot.png)
