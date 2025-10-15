@@ -239,10 +239,6 @@ function Base.show(io::IO, system::T) where T <: System
 end
 
 function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
-    if haskey(io, :typeinfo)
-        show(io, system)
-        return
-    end
     for property in fieldnames(T)
         property === :marginal && break
         value = getproperty(system, property)
