@@ -239,6 +239,10 @@ function Base.show(io::IO, system::T) where T <: System
 end
 
 function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
+    if haskey(io, :typeinfo)
+        show(io, system)
+        return
+    end
     for property in fieldnames(T)
         property === :marginal && break
         value = getproperty(system, property)
@@ -254,11 +258,10 @@ function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
     return
 end
 
-Base.show(io::IO, ray::T) where T <: Ray = show(io, ray.ynu)
-
-function Base.show(io::IO, mime::S, ray::T) where {S <: MIME"text/plain", T <: Ray}
-    print(io, T, ".ynu:\n\n")
-    show(io, mime, ray.ynu)
+function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
+    summary(io, ray)
+    println(io, ".ynu:")
+    show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.ynu)
 end
 
 function Base.getproperty(system::System, property::Symbol)
