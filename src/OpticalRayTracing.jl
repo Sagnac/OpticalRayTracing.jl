@@ -2,7 +2,7 @@ module OpticalRayTracing
 
 using Printf
 
-export TransferMatrix, Lens, construct, transfer, reverse_transfer, raytrace,
+export TransferMatrix, Lens, transfer, reverse_transfer, raytrace,
        trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
        solve, flatten, raypoints, rayplot, vignetting, slopes
 
@@ -65,7 +65,7 @@ function scale!(A::Matrix{Float64})
     return A
 end
 
-function construct(surfaces::Matrix{Float64})
+function Lens(surfaces::Matrix{Float64})
     rows = size(surfaces, 1)
     R, t, n = eachcol(surfaces)
     A = Matrix{Float64}(undef, rows, 2)
@@ -144,7 +144,7 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.A, 1)); clip = fals
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
-    raytrace(construct(surfaces), y, ω, a)
+    raytrace(Lens(surfaces), y, ω, a)
 end
 
 function trace_marginal_ray(lens::Lens, a, ω = 0.0)
@@ -162,7 +162,7 @@ end
 function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
     (; A, n) = lens
     A = [A; [EBFD 0.0]]
-    rear_lens = Lens(@view(A[stop+1:end,:]), n)
+    rear_lens = Lens(A[stop+1:end,:], n)
     objective = rev(A, stop, n)
     rear_chief_ray = raytrace(rear_lens, 0.0, -1.0)
     ȳ′ = rear_chief_ray[end,1]
@@ -199,7 +199,7 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
                   TransferMatrix(lens), lens)
 end
 
-solve(surfaces, a, h′ = -0.5) = solve(construct(surfaces), a, h′)
+solve(surfaces, a, h′ = -0.5) = solve(Lens(surfaces), a, h′)
 
 function vignetting(system::System, a::AbstractVector)
     (; marginal, chief) = system
@@ -327,7 +327,7 @@ function rayplot(lens::Lens, a::AbstractVector, h′ = -0.5)
 end
 
 function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
-    lens = construct(surfaces)
+    lens = Lens(surfaces)
     rayplot(lens, a, h′)
 end
 
