@@ -151,11 +151,13 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     marginal_ray = raytrace(lens, 1.0, ω, a)
     y, ω = eachcol(marginal_ray)
     f = -inv(ω[end])
-    EBFD = -y[end] / ω[end]
+    EBFD = y[end] * f
     sv = a ./ @view(y[begin+1:end])
     s, stop = findmin(sv)
     marginal_ray *= s
-    marginal_ray = [marginal_ray; [0.0 marginal_ray[end,2]]]
+    ωf = marginal_ray[end,2]
+    yf = iszero(ωf) ? marginal_ray[end,1] : 0.0
+    marginal_ray = [marginal_ray; [yf ωf]]
     return marginal_ray, stop, f, EBFD
 end
 
@@ -275,10 +277,12 @@ end
 function raypoints(system::System)
     (; lens) = system
     (; A, n) = lens
-    (; marginal, chief) = system
+    (; marginal, chief, EBFD) = system
     t = map(*, @view(A[:,1]), @view(n[begin:end-1]))
     k = length(t) + 2
     l = sum(t)
+    BFD = isfinite(EBFD) ? abs(EBFD) * n[end] : l / 4
+    l += BFD
     s = 0.1
     d = -l * s / n[1]
     at_objective = iszero(t[1])
@@ -288,7 +292,7 @@ function raypoints(system::System)
     for i = 2:lastindex(t)
         z[i+1] = z[i] + t[i]
     end
-    z[end] = z[end-1] + system.EBFD * n[end]
+    z[end] = z[end-1] + BFD
     y0 = zeros(k)
     y1 = marginal.y
     y2 = -y1
