@@ -56,7 +56,7 @@ struct System
     marginal::Ray{Marginal}
     chief::Ray{Chief}
     H::Float64
-    transfer_matrix::TransferMatrix
+    A::TransferMatrix
     lens::Lens
 end
 
@@ -266,13 +266,7 @@ function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.ynu)
 end
 
-function Base.getproperty(system::System, property::Symbol)
-    if property === :A
-        getfield(system, :transfer_matrix).A
-    else
-        getfield(system, property)
-    end
-end
+Base.getindex(A::TransferMatrix) = A.A
 
 function raypoints(system::System)
     (; lens) = system
