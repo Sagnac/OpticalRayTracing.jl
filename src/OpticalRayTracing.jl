@@ -309,7 +309,7 @@ end
 # TODO: create a recipe
 function rayplot(system::System)
     fig = Main.Figure()
-    axis = Main.Axis(fig[1,1]; xlabel = "z", ylabel = "y")
+    axis = Main.Axis(fig[1,1])
     z, y... = raypoints(system)
     i = 0
     for yi in y
