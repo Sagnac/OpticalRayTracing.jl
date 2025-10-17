@@ -108,9 +108,9 @@ flatten(transfer_matrix::TransferMatrix) = flatten(transfer_matrix.A)
 
 function flatten(A::Matrix)
     f = -inv(A[2,1])
-    δ = (1.0 - A[2,2]) * f
-    δ′ = (A[1,1] - 1.0) * f
-    return (; f, δ, δ′)
+    EFFD = -A[2,2] * f
+    EBFD = A[1,1] * f
+    return (; f, EFFD, EBFD)
 end
 
 function rev(objective, stop, n)
