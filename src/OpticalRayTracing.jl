@@ -22,21 +22,21 @@ struct Ray{T <: TangentialRay}
 end
 
 struct TransferMatrix
-    A::Matrix{Float64}
+    M::Matrix{Float64}
 end
 
 struct Lens
-    A::Matrix{Float64}
+    M::Matrix{Float64}
     n::Vector{Float64}
 end
 
 slopes(ray::Ray, n) = map(/, ray.nu, n)
 
 function TransferMatrix(lens::Lens)
-    (; A) = lens
-    τ, ϕ = eachcol(A)
-    A = prod([1.0 τ[i]; -ϕ[i] 1.0-τ[i]*ϕ[i]] for i = reverse(axes(A, 1)))
-    TransferMatrix(A)
+    (; M) = lens
+    τ, ϕ = eachcol(M)
+    M = prod([1.0 τ[i]; -ϕ[i] 1.0-τ[i]*ϕ[i]] for i = reverse(axes(M, 1)))
+    TransferMatrix(M)
 end
 
 struct Pupil
@@ -56,30 +56,30 @@ struct System
     marginal::Ray{Marginal}
     chief::Ray{Chief}
     H::Float64
-    A::TransferMatrix
+    M::TransferMatrix
     lens::Lens
 end
 
-function scale!(A::Matrix{Float64})
-    A[:,2] .*= 1E-3
-    return A
+function scale!(M::Matrix{Float64})
+    M[:,2] .*= 1E-3
+    return M
 end
 
 function Lens(surfaces::Matrix{Float64})
     rows = size(surfaces, 1)
     R, t, n = eachcol(surfaces)
-    A = Matrix{Float64}(undef, rows, 2)
+    M = Matrix{Float64}(undef, rows, 2)
     t[1] *= isfinite(t[1])
-    @. A[:,1] = t / n
+    @. M[:,1] = t / n
     for i = 1:rows-1
-        A[i,2] = (n[i+1] - n[i]) / R[i+1]
+        M[i,2] = (n[i+1] - n[i]) / R[i+1]
     end
     if iszero(t[end]) || !isfinite(t[end])
-        A = A[1:end-1,:]
+        M = M[1:end-1,:]
     else
-        A[end,2] = 0.0
+        M[end,2] = 0.0
     end
-    return Lens(A, n)
+    return Lens(M, n)
 end
 
 function transfer(y, ω, τ, ϕ)
@@ -88,28 +88,28 @@ function transfer(y, ω, τ, ϕ)
     return y′, ω′
 end
 
-extend(A, τ, τ′) = [1.0 τ′; 0.0 1.0] * A * [1.0 τ; 0.0 1.0]
+extend(M, τ, τ′) = [1.0 τ′; 0.0 1.0] * M * [1.0 τ; 0.0 1.0]
 
-transfer(A::Matrix, v::Vector, τ, τ′) = extend(A, τ, τ′) * v
-transfer(system::System, v::Vector, τ, τ′) = transfer(system.A, v, τ, τ′)
-transfer(A::TransferMatrix, v::Vector, τ, τ′) = transfer(A.A, v, τ, τ′)
+transfer(M::Matrix, v::Vector, τ, τ′) = extend(M, τ, τ′) * v
+transfer(system::System, v::Vector, τ, τ′) = transfer(system.M, v, τ, τ′)
+transfer(M::TransferMatrix, v::Vector, τ, τ′) = transfer(M.M, v, τ, τ′)
 
-reverse_transfer(A::Matrix, v::Vector, τ′, τ) = extend(A, τ, τ′) \ v
+reverse_transfer(M::Matrix, v::Vector, τ′, τ) = extend(M, τ, τ′) \ v
 
 function reverse_transfer(system::System, v::Vector, τ′, τ)
-    reverse_transfer(system.A, v, τ′, τ)
+    reverse_transfer(system.M, v, τ′, τ)
 end
 
-function reverse_transfer(A::TransferMatrix, v::Vector, τ′, τ)
-    reverse_transfer(A.A, v, τ′, τ)
+function reverse_transfer(M::TransferMatrix, v::Vector, τ′, τ)
+    reverse_transfer(M.M, v, τ′, τ)
 end
 
-flatten(transfer_matrix::TransferMatrix) = flatten(transfer_matrix.A)
+flatten(transfer_matrix::TransferMatrix) = flatten(transfer_matrix.M)
 
-function flatten(A::Matrix)
-    f = -inv(A[2,1])
-    EFFD = -A[2,2] * f
-    EBFD = A[1,1] * f
+function flatten(M::Matrix)
+    f = -inv(M[2,1])
+    EFFD = -M[2,2] * f
+    EBFD = M[1,1] * f
     return (; f, EFFD, EBFD)
 end
 
@@ -126,12 +126,12 @@ function rev(objective_chief_ray)
     reshape(v, 2, size(objective_chief_ray, 1) + 1)'
 end
 
-function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.A, 1)); clip = false)
-    (; A) = lens
-    τ, ϕ = eachcol(A)
-    rt = similar(A, size(A, 1) + 1, size(A, 2))
+function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.M, 1)); clip = false)
+    (; M) = lens
+    τ, ϕ = eachcol(M)
+    rt = similar(M, size(M, 1) + 1, size(M, 2))
     rt[1,:] .= y, ω
-    for i = axes(A, 1)
+    for i = axes(M, 1)
         y, ω = transfer(y, ω, τ[i], ϕ[i])
         if clip && y > a[i]
             rt[i+1:end,:] .= NaN
@@ -162,10 +162,10 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
 end
 
 function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
-    (; A, n) = lens
-    A = [A; [EBFD 0.0]]
-    rear_lens = Lens(A[stop+1:end,:], n)
-    objective = rev(A, stop, n)
+    (; M, n) = lens
+    M = [M; [EBFD 0.0]]
+    rear_lens = Lens(M[stop+1:end,:], n)
+    objective = rev(M, stop, n)
     rear_chief_ray = raytrace(rear_lens, 0.0, -1.0)
     ȳ′ = rear_chief_ray[end,1]
     s = h′ / ȳ′
@@ -266,13 +266,13 @@ function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.ynu)
 end
 
-Base.getindex(A::TransferMatrix) = A.A
+Base.getindex(M::TransferMatrix) = M.M
 
 function raypoints(system::System)
     (; lens) = system
-    (; A, n) = lens
+    (; M, n) = lens
     (; marginal, chief, EBFD) = system
-    t = map(*, @view(A[:,1]), @view(n[begin:end-1]))
+    t = map(*, @view(M[:,1]), @view(n[begin:end-1]))
     k = length(t) + 2
     l = sum(t)
     BFD = isfinite(EBFD) ? abs(EBFD) * n[end] : l / 4

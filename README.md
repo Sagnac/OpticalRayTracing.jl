@@ -53,7 +53,7 @@ stop: 5
 
 ####
 
-julia> system.A[] # vertex transfer matrix
+julia> system.M[] # vertex transfer matrix
 2×2 Matrix{Float64}:
   0.867538   13.3868
  -0.0196895   0.848862
