@@ -4,7 +4,7 @@ using Printf
 
 export TransferMatrix, Lens, transfer, reverse_transfer, raytrace,
        trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
-       solve, flatten, raypoints, rayplot, vignetting
+       solve, flatten, raypoints, rayplot, vignetting, aberrations
 
 abstract type ParaxialRay end
 
@@ -37,6 +37,27 @@ end
 struct Lens
     M::Matrix{Float64}
     n::Vector{Float64}
+end
+
+struct Aberration
+    spherical::Float64
+    coma::Float64
+    astigmatism::Float64
+    petzval::Float64
+    distortion::Float64
+    axial::Float64
+    lateral::Float64
+    sagittal::Float64
+    medial::Float64
+    tangential::Float64
+    W040::Vector{Float64}
+    W131::Vector{Float64}
+    W222::Vector{Float64}
+    W220P::Vector{Float64}
+    W220::Vector{Float64}
+    W311::Vector{Float64}
+    W020::Vector{Float64}
+    W111::Vector{Float64}
 end
 
 function TransferMatrix(lens::Lens)
@@ -243,6 +264,57 @@ function vignetting(system::System, a::AbstractVector)
     return vig
 end
 
+# Helium d-line wavelength in millimeters
+const λ = 587.5618e-6
+
+Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]
+
+function aberrations(surfaces::Matrix{Float64}, system::System,
+                     δn::Vector{Float64} = zeros(size(surfaces, 1)),
+                     λ::Float64 = λ)
+    (; marginal, chief, H) = system
+    R = @view surfaces[2:end,1]
+    n = marginal.n
+    y = @view marginal.y[2:end-1]
+    ȳ = @view chief.y[2:end-1]
+    nu = marginal.nu
+    nū = chief.nu
+    u = marginal.u
+    j = eachindex(R)
+    A = [nu[i] + n[i] * y[i] / R[i] for i ∈ j]
+    Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j]
+    yΔ = [y[i] * Δ(u, n, i) for i ∈ j]
+    yδ = [y[i] * Δ(δn, n, i) for i ∈ j]
+    P = [(inv(n[i+1]) - inv(n[i])) / R[i] for i ∈ j]
+    # per surface contributions
+    W040 = @. -A ^ 2 * yΔ / 8λ
+    W131 = @. -A * Ā * yΔ / 2λ
+    W222 = @. -Ā ^ 2 * yΔ / 2λ
+    W220P = @. -H ^ 2 * P / 4λ
+    W220 = @. W220P + W222 / 2
+    W311 = @. Ā / A * (W222 + 2W220P)
+    W020 = @. A * yδ / 2λ
+    W111 = @. Ā * yδ / λ
+    # system coefficients
+    spherical = sum(W040)
+    coma = sum(W131)
+    astigmatism = sum(W222)
+    distortion = sum(W311)
+    # field curvatures
+    petzval = sum(W220P)
+    sagittal = petzval + 0.5 * astigmatism
+    medial = petzval + astigmatism
+    tangential = petzval + 1.5 * astigmatism
+    # chromatic aberrations
+    # defocus from longitudinal
+    axial = sum(W020)
+    # tilt from transverse
+    lateral = sum(W111)
+    Aberration(spherical, coma, astigmatism, petzval, distortion, axial, lateral,
+               sagittal, medial, tangential,
+               W040, W131, W222, W220P, W220, W311, W020, W111)
+end
+
 function Base.show(io::IO, system::T) where T <: System
     print(io, "f: ")
     show(IOContext(io, :compact => true), system.f)
@@ -273,6 +345,15 @@ function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
     summary(io, ray)
     println(io, ".yu:")
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.yu)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
+    println(T)
+    for property in fieldnames(T)
+        property === :lateral && break
+        @printf(io, "\n%4s: %.4f", property, getproperty(aberr, property))
+    end
+    return
 end
 
 Base.getindex(M::TransferMatrix) = M.M
