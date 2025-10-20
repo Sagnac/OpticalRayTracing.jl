@@ -4,7 +4,7 @@ using Printf
 
 export TransferMatrix, Lens, transfer, reverse_transfer, raytrace,
        trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
-       solve, flatten, raypoints, rayplot, vignetting, slopes
+       solve, flatten, raypoints, rayplot, vignetting
 
 abstract type ParaxialRay end
 
@@ -16,9 +16,18 @@ struct Chief <: TangentialRay end
 
 struct Ray{T <: TangentialRay}
     y::Vector{Float64}
+    n::Vector{Float64}
+    u::Vector{Float64}
+    yu::Matrix{Float64}
     nu::Vector{Float64}
     ynu::Matrix{Float64}
-    Ray{T}(ynu) where T <: TangentialRay = new(eachcol(ynu)..., ynu)
+    function Ray{T}(ynu, n) where T <: TangentialRay
+        y, nu = eachcol(ynu)
+        n = [n; n[end]]
+        u = map(/, nu, n)
+        yu = [y u]
+        new(y, n, u, yu, nu, ynu)
+    end
 end
 
 struct TransferMatrix
@@ -29,8 +38,6 @@ struct Lens
     M::Matrix{Float64}
     n::Vector{Float64}
 end
-
-slopes(ray::Ray, n) = map(/, ray.nu, n)
 
 function TransferMatrix(lens::Lens)
     (; M) = lens
@@ -196,8 +203,9 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
     N = abs(f / EP.D)
     FOV = 2atand(abs(h′ / f))
+    n = lens.n
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
-                  Ray{Marginal}(marginal_ray), Ray{Chief}(chief_ray), H,
+                  Ray{Marginal}(marginal_ray, n), Ray{Chief}(chief_ray, n), H,
                   TransferMatrix(lens), lens)
 end
 
@@ -262,8 +270,8 @@ end
 
 function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
     summary(io, ray)
-    println(io, ".ynu:")
-    show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.ynu)
+    println(io, ".yu:")
+    show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.yu)
 end
 
 Base.getindex(M::TransferMatrix) = M.M
