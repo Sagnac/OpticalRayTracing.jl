@@ -350,7 +350,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
     println(T)
     for property in fieldnames(T)
-        property === :lateral && break
+        property === :sagittal && break
         @printf(io, "\n%4s: %.4f", property, getproperty(aberr, property))
     end
     return
