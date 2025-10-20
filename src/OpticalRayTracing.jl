@@ -249,6 +249,7 @@ function Base.show(io::IO, system::T) where T <: System
 end
 
 function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
+    println(T)
     if haskey(io, :typeinfo)
         show(io, system)
         return
