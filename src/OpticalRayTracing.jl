@@ -202,8 +202,8 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     H = nū * y
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
     N = abs(f / EP.D)
-    FOV = 2atand(abs(h′ / f))
     n = lens.n
+    FOV = 2atand(abs(nū / n[1]))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
                   Ray{Marginal}(marginal_ray, n), Ray{Chief}(chief_ray, n), H,
                   TransferMatrix(lens), lens)
