@@ -12,12 +12,9 @@ function rayplot(x...; theme = Attributes(), kwargs...)
     with_theme(() -> _rayplot(x...; kwargs...), theme)
 end
 
-@recipe(RayTracePlot) do scene
-    Attributes(;
-        ray_colors = (:green, :blue),
-        surface_color = :black,
-        default_theme(Lines)...
-    )
+@recipe RayTracePlot begin
+    ray_colors = (:green, :blue)
+    surface_color = :black
 end
 
 _rayplot(system::System; kwargs...) = raytraceplot(system; kwargs...)
@@ -40,10 +37,10 @@ function _rayplot(
 end
 
 function plot!(p::RayTracePlot{Tuple{System}})
-    system = p[1][]
+    system = p.arg1[]
     attr = p.attributes
-    ray_colors = pop!(attr, :ray_colors)[]
-    surface_color = pop!(attr, :surface_color)[]
+    ray_colors = attr.ray_colors[]
+    surface_color = attr.surface_color[]
     z, y... = raypoints(system)
     i = 0
     for yi in y
@@ -55,15 +52,14 @@ function plot!(p::RayTracePlot{Tuple{System}})
     zf = z[end]
     yf = y[4][end]
     lines!(p, attr, [zf for i = 1:2], [-yf, yf]; color = surface_color)
-    DataInspector()
+    DataInspector(textcolor = :black)
     return p
 end
 
 function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, System, <:AbstractVector}})
-    surfaces, system, a = (getindex(p, i)[] for i = 1:3)
+    surfaces, system, a = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
-    surface_color = pop!(attr, :surface_color)[]
-    delete!(attr, :ray_colors)
+    surface_color = attr.surface_color[]
     z, y... = raypoints(system)
     (; n) = system.lens
     R = @view surfaces[2:end,1]
@@ -99,7 +95,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, System, <:AbstractVector
         lines!(p, attr, z_edge, y_edge; color = surface_color)
         lines!(p, attr, z_edge, -y_edge; color = surface_color)
     end
-    raytraceplot!(system)
+    raytraceplot!(p, attr, system)
     return p
 end
 
