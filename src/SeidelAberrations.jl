@@ -4,8 +4,8 @@ const λ = 587.5618e-6
 Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]
 
 function aberrations(surfaces::Matrix{Float64}, system::System,
-                     δn::Vector{Float64} = zeros(size(surfaces, 1)),
-                     λ::Float64 = λ)
+                     λ::Float64 = λ,
+                     δn::Vector{Float64} = zeros(size(surfaces, 1)))
     (; marginal, chief, H) = system
     R = @view surfaces[2:end,1]
     n = marginal.n

@@ -87,7 +87,8 @@ a        un        half        full
 
 ## Seidel aberrations
 
-The surface coefficients can be extracted by querying the relevant `WIJK` fields. In addition, chromatic aberration can be quantified for a given `δn` vector.
+The surface coefficients can be extracted by querying the relevant `WIJK` fields. In addition, chromatic aberration can be quantified for a given `δn` vector. The results are in waves at the `d` spectral line for a system in `mm`; the wavelength parameter can also be tuned.
+
 ```julia
 julia> aberrations(surfaces, system)
 OpticalRayTracing.Aberration
