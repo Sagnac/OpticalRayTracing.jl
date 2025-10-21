@@ -4,7 +4,7 @@ using Printf
 
 export TransferMatrix, Lens, transfer, reverse_transfer, raytrace,
        trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
-       solve, flatten, raypoints, rayplot, vignetting, aberrations
+       solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations
 
 abstract type ParaxialRay end
 
@@ -390,82 +390,7 @@ function raypoints(system::System)
 end
 
 # requires Makie
-# TODO: create a recipe
-function rayplot(system::System)
-    fig, axis, z, y = _rayplot(system)
-    _rayplot!(fig, axis, z, y)
-end
-
-function _rayplot(system::System)
-    fig = Main.Figure()
-    axis = Main.Axis(fig[1,1])
-    z, y... = raypoints(system)
-    return fig, axis, z, y
-end
-
-function _rayplot!(fig, axis, z, y)
-    i = 0
-    for yi in y
-        i += 1
-        color = i > 3 ? :green : :blue
-        Main.scatter!(axis, z, yi; color)
-        Main.lines!(axis, z, yi; color)
-    end
-    zf = z[end]
-    yf = y[4][end]
-    Main.lines!(axis, [zf for i = 1:2], [-yf, yf]; color = :black)
-    Main.DataInspector(fig)
-    return fig
-end
-
-function rayplot(lens::Lens, a::AbstractVector, h′ = -0.5)
-    system = solve(lens, a, h′)
-    rayplot(system)
-end
-
-function rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5)
-    lens = Lens(surfaces)
-    rayplot(lens, a, h′)
-end
-
-function rayplot(surfaces::Matrix{Float64}, system::System, a::AbstractVector)
-    fig, axis, z, y = _rayplot(system)
-    (; n) = system.lens
-    R = @view surfaces[2:end,1]
-    z_surfaces = @view z[2:end-1]
-    z_corners = Float64[]
-    y_corners = Float64[]
-    for (i, r) in pairs(R)
-        z_vertex = z_surfaces[i]
-        ai = a[i]
-        z_max = ai ^ 2 / 2r + z_vertex
-        if isfinite(r)
-            zi = range(z_vertex, z_max, 70)
-            y_surface = @.(sqrt(abs(2r * (zi - z_vertex))))
-        else
-            zi = [z_vertex, z_vertex]
-            y_surface = [0.0, ai]
-        end
-        Main.lines!(axis, zi, y_surface; color = :black)
-        Main.lines!(axis, zi, -y_surface; color = :black)
-        push!(z_corners, z_max)
-        push!(y_corners, y_surface[end])
-    end
-    n_1 = n[1]
-    for i = 1:length(z_corners)-1
-        n_i = n[i+1]
-        n_i == n_1 && continue
-        z1, z2 = z_edge = @view z_corners[i:i+1]
-        y1, y2 = y_edge = @view y_corners[i:i+1]
-        z_min = z_edge[argmin(y_edge)]
-        y_max = max(y1, y2)
-        z_edge = [z1, z_min, z2]
-        y_edge = [y1, y_max, y2]
-        Main.lines!(axis, z_edge, y_edge; color = :black)
-        Main.lines!(axis, z_edge, -y_edge; color = :black)
-    end
-    _rayplot!(fig, axis, z, y)
-    return fig
-end
+function rayplot end
+function rayplot! end
 
 end

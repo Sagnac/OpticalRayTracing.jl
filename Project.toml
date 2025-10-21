@@ -5,3 +5,12 @@ version = "0.3.0"
 
 [deps]
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[weakdeps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+
+[extensions]
+MakieExtension = "Makie"
+
+[compat]
+Makie = "0.24"
