@@ -1,4 +1,4 @@
-# Helium d-line wavelength in millimeters
+# Helium Fraunhofer d-line wavelength in millimeters
 const λ = 587.5618e-6
 
 Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]

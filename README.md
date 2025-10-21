@@ -39,32 +39,76 @@ a = [10.25, 10.25, 9.0, 9.0, 7.63, 9.0, 9.0, 9.0]
 h′ = -21.5
 
 system = solve(surfaces, a, h′)
+```
 
+```julia
 # output
 
-f: 50.7885
+OpticalRayTracing.System
+
+   f: 50.7885
 EBFD: 44.0610
 EFFD: -43.1125
-   N: 2.7976
+   N: 2.8140
  FOV: 45.8882
 stop: 5
-  EP: D = 18.1545, t = 7.9184
-  XP: D = 18.0683, t = -6.4864
+  EP: D = 18.0483, t = 8.9314
+  XP: D = 17.6129, t = -5.5024
+```
 
-####
+```julia
+julia> system.M # vertex matrix
+TransferMatrix([0.8675383998011305 13.386798282391975; -0.01968949458327543 0.8488623764668577])
+```
 
-julia> system.M[] # vertex transfer matrix
-2×2 Matrix{Float64}:
-  0.867538   13.3868
- -0.0196895   0.848862
+## Vignetting analysis
+
+```julia
+julia> vignetting(system, a)
+
+Partially vignetted:
+[1, 2, 3, 8]
+
+
+Fully vignetted or limit:
+[5]
+
+a        un        half        full
+8×4 Matrix{Float64}:
+ 10.25  12.805    9.02413  9.02413
+ 10.25  10.8017   8.27315  8.27315
+  9.0    9.0471   7.59772  7.59772
+  9.0    8.65861  7.48453  7.48453
+  7.63   7.63     7.63     7.63
+  9.0    8.13925  7.68614  7.68614
+  9.0    8.94668  7.77516  7.77516
+  9.0   10.2157   7.82878  7.82878
+```
+
+## Seidel aberrations
+
+The surface coefficients can be extracted by querying the relevant `WIJK` fields. In addition, chromatic aberration can be quantified for a given `δn` vector.
+```julia
+julia> aberrations(surfaces, system)
+OpticalRayTracing.Aberration
+
+spherical: 16.3806
+coma: 3.4316
+astigmatism: -15.7483
+petzval: 48.9284
+distortion: -50.5448
+axial: 0.0000
+lateral: -0.0000
 ```
 
 ## Plotting example
 
+By default a light theme is used, but this can be tuned with the `theme` keyword argument. `ray_colors` & `surface_color` are supported kwargs as well as anything Makie's `lines` accepts.
+
 ```julia
 using GLMakie
 
-julia> rayplot(system)
+rayplot(surfaces, system, a)
 ```
 
 ![rayplot](images/rayplot.png)
