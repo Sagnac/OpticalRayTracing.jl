@@ -1,7 +1,7 @@
 name = "OpticalRayTracing"
 uuid = "ebaba64e-82fa-4c4f-87ec-8b3331953780"
 authors = ["Sagnac"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
