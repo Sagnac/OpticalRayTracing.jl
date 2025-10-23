@@ -21,7 +21,12 @@ function raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
         d = z[1]
     end
     y0 = zero(z)
-    y1 = marginal.y
+    if iszero(marginal.u[1])
+        y1 = marginal.y
+    else
+        y1 = copy(marginal.y)
+        y1[1] = 0.0
+    end
     y2 = -y1
     nū = chief.nu[1]
     ȳ1 = chief.y[2]

@@ -18,6 +18,8 @@ function scale!(M::Matrix{Float64})
     return M
 end
 
+reduced_thickness(lens::Lens) = lens.M[:,1]
+
 function Lens(surfaces::Matrix{Float64})
     rows = size(surfaces, 1)
     R, t, n = eachcol(surfaces)
@@ -36,9 +38,19 @@ function Lens(surfaces::Matrix{Float64})
 end
 
 function transfer(y, ω, τ, ϕ)
-    y′ = isfinite(τ) ? ω * τ + y : y
-    ω′ = ω - y′ * ϕ
+    y′ = transfer(y, ω, τ)
+    ω′ = refract(y′, ω, ϕ)
     return y′, ω′
+end
+
+function transfer(y, ω, τ)
+    y′ = isfinite(τ) ? y + ω * τ : y
+    return y′
+end
+
+function refract(y, ω, ϕ)
+    ω′ = ω - y * ϕ
+    return ω′
 end
 
 function rev(objective, stop, n)
@@ -75,6 +87,34 @@ function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
     raytrace(Lens(surfaces), y, ω, a)
 end
 
+function raytrace(system::System, ȳ, s,
+                  a = fill(Inf, size(system.lens.M, 1)); clip = false)
+    (; lens, EP) = system
+    (; M) = lens
+    n = lens.n
+    t = -EP.t
+    EP_O = s + t
+    y = EP.D / 2
+    nu = -y / EP_O
+    nū = ȳ / EP_O
+    lens = Lens([[t M[1,2]]; @view(M[2:end,:])], n)
+    marginal_ray_rt = raytrace(lens, y, nu, a; clip)
+    marginal_ray = extend(marginal_ray_rt.ynu)
+    chief_ray_rt = raytrace(lens, 0.0, nū, a; clip)
+    ȳ′ = -nū * y / marginal_ray_rt.nu[end]
+    chief_ray = chief_ray_rt.ynu
+    n′ū′ = chief_ray_rt.nu[end]
+    chief_ray = [chief_ray; [ȳ′ n′ū′]]
+    τ = reduced_thickness(lens)
+    return Ray{Marginal}(marginal_ray, τ, n), Ray{Chief}(chief_ray, τ, n)
+end
+
+function extend(marginal_ray)
+    ωf = marginal_ray[end,2]
+    yf = iszero(ωf) ? marginal_ray[end,1] : 0.0
+    return [marginal_ray; [yf ωf]]
+end
+
 function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     rt = raytrace(lens, 1.0, ω, a)
     marginal_ray = rt.ynu
@@ -85,10 +125,9 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     sv = a ./ @view(y[begin+1:end])
     s, stop = findmin(sv)
     marginal_ray *= s
-    ωf = marginal_ray[end,2]
-    yf = iszero(ωf) ? marginal_ray[end,1] : 0.0
-    marginal_ray = [marginal_ray; [yf ωf]]
-    return Ray{Marginal}(marginal_ray, lens.M[:,1], lens.n), stop, f, EBFD
+    marginal_ray = extend(marginal_ray)
+    τ = reduced_thickness(lens)
+    return Ray{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
 function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
@@ -104,7 +143,8 @@ function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
     objective_chief_ray = rev(raytrace(objective, 0.0, s).ynu)
     objective_chief_ray[:,2] .*= -1.0
     chief_ray = [objective_chief_ray; @view(rear_chief_ray[begin+1:end,:])]
-    return Ray{Chief}(chief_ray, lens.M[:,1], n)
+    τ = reduced_thickness(lens)
+    return Ray{Chief}(chief_ray, τ, n)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
