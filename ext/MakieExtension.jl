@@ -4,12 +4,16 @@ using OpticalRayTracing, Makie
 
 using OpticalRayTracing: System
 
-import OpticalRayTracing: rayplot
+import OpticalRayTracing: rayplot, rayplot!
 
 import Makie: plot!
 
 function rayplot(x...; theme = Attributes(), kwargs...)
     with_theme(() -> _rayplot(x...; kwargs...), theme)
+end
+
+function rayplot!(x...; theme = Attributes(), kwargs...)
+    with_theme(() -> _rayplot!(x...; kwargs...), theme)
 end
 
 @recipe RayTracePlot begin
@@ -19,12 +23,27 @@ end
 
 _rayplot(system::System; kwargs...) = raytraceplot(system; kwargs...)
 
+_rayplot!(system::System; kwargs...) = raytraceplot!(system; kwargs...)
+
 function _rayplot(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
     _rayplot(solve(lens, a, h′); kwargs...)
 end
 
+function _rayplot!(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
+    _rayplot!(solve(lens, a, h′); kwargs...)
+end
+
 function _rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5; kwargs...)
     _rayplot(Lens(surfaces), a, h′; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    h′ = -0.5;
+    kwargs...
+)
+    _rayplot!(Lens(surfaces), a, h′; kwargs...)
 end
 
 function _rayplot(
@@ -34,6 +53,15 @@ function _rayplot(
     kwargs...
 )
     raytraceplot(surfaces, system, a; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    system::System,
+    a::AbstractVector;
+    kwargs...
+)
+    raytraceplot!(surfaces, system, a; kwargs...)
 end
 
 function plot!(p::RayTracePlot{Tuple{System}})
