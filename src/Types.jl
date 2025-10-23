@@ -1,24 +1,27 @@
 abstract type ParaxialRay end
 
-abstract type TangentialRay <: ParaxialRay end
+struct TangentialRay <: ParaxialRay end
 
-struct Marginal <: TangentialRay end
+struct Marginal <: ParaxialRay end
 
-struct Chief <: TangentialRay end
+struct Chief <: ParaxialRay end
 
-struct Ray{T <: TangentialRay}
+struct Ray{T <: ParaxialRay}
     y::Vector{Float64}
     n::Vector{Float64}
     u::Vector{Float64}
     yu::Matrix{Float64}
     nu::Vector{Float64}
     ynu::Matrix{Float64}
-    function Ray{T}(ynu, n) where T <: TangentialRay
+    z::Vector{Float64}
+    function Ray{T}(ynu, τ, n) where T <: ParaxialRay
         y, nu = eachcol(ynu)
         n = [n; n[end]]
         u = map(/, nu, n)
         yu = [y u]
-        new(y, n, u, yu, nu, ynu)
+        t = map(*, τ, @view(n[1:end-2]))
+        z = [-y[1] / u[1]; cumsum([t; -y[end-1] / u[end-1]])]
+        new(y, n, u, yu, nu, ynu, z)
     end
 end
 

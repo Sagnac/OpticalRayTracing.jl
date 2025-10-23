@@ -55,7 +55,7 @@ function rev(objective_chief_ray)
 end
 
 function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.M, 1)); clip = false)
-    (; M) = lens
+    (; M, n) = lens
     τ, ϕ = eachcol(M)
     rt = similar(M, size(M, 1) + 1, size(M, 2))
     rt[1,:] .= y, ω
@@ -68,7 +68,7 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.M, 1)); clip = fals
         rt[i+1,1] = y
         rt[i+1,2] = ω
     end
-    return rt
+    return Ray{TangentialRay}(rt, τ, n)
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
@@ -76,8 +76,10 @@ function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
 end
 
 function trace_marginal_ray(lens::Lens, a, ω = 0.0)
-    marginal_ray = raytrace(lens, 1.0, ω, a)
-    y, ω = eachcol(marginal_ray)
+    rt = raytrace(lens, 1.0, ω, a)
+    marginal_ray = rt.ynu
+    y = rt.y
+    ω = rt.nu
     f = -inv(ω[end])
     EBFD = y[end] * f
     sv = a ./ @view(y[begin+1:end])
@@ -86,7 +88,7 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     ωf = marginal_ray[end,2]
     yf = iszero(ωf) ? marginal_ray[end,1] : 0.0
     marginal_ray = [marginal_ray; [yf ωf]]
-    return marginal_ray, stop, f, EBFD
+    return Ray{Marginal}(marginal_ray, lens.M[:,1], lens.n), stop, f, EBFD
 end
 
 function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
@@ -94,28 +96,29 @@ function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
     M = [M; [EBFD 0.0]]
     rear_lens = Lens(M[stop+1:end,:], n)
     objective = rev(M, stop, n)
-    rear_chief_ray = raytrace(rear_lens, 0.0, -1.0)
-    ȳ′ = rear_chief_ray[end,1]
+    rt = raytrace(rear_lens, 0.0, -1.0)
+    rear_chief_ray = rt.ynu
+    ȳ′ = rt.y[end]
     s = h′ / ȳ′
     rear_chief_ray *= s
-    objective_chief_ray = rev(raytrace(objective, 0.0, s))
+    objective_chief_ray = rev(raytrace(objective, 0.0, s).ynu)
     objective_chief_ray[:,2] .*= -1.0
     chief_ray = [objective_chief_ray; @view(rear_chief_ray[begin+1:end,:])]
-    return chief_ray
+    return Ray{Chief}(chief_ray, lens.M[:,1], n)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     marginal_ray, stop, f, EBFD = trace_marginal_ray(lens, a)
     chief_ray = trace_chief_ray(lens, stop, EBFD, h′)
-    ȳ = chief_ray[begin+1,1]
-    nū = chief_ray[begin,2]
-    ȳ′ = chief_ray[end,1]
-    n′ū′ = chief_ray[end,2]
-    y = marginal_ray[begin,1]
-    nu = marginal_ray[begin,2]
-    y′ = marginal_ray[end,1]
-    n′u′ = marginal_ray[end,2]
-    ȳ′b = chief_ray[end-1,1]
+    ȳ = chief_ray.y[begin+1]
+    nū = chief_ray.nu[begin]
+    ȳ′ = chief_ray.y[end]
+    n′ū′ = chief_ray.nu[end]
+    y = marginal_ray.y[begin]
+    nu = marginal_ray.nu[begin]
+    y′ = marginal_ray.y[end]
+    n′u′ = marginal_ray.nu[end]
+    ȳ′b = chief_ray.y[end-1]
     # δ′ = EBFD - f
     δ = (ȳ′ - n′ū′ * f - ȳ) / nū
     EFFD = δ - f
@@ -123,10 +126,9 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     H = nū * y
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
     N = abs(f / EP.D)
-    n = lens.n
-    FOV = 2atand(abs(nū / n[1]))
+    FOV = 2atand(abs(chief_ray.u[1]))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
-                  Ray{Marginal}(marginal_ray, n), Ray{Chief}(chief_ray, n), H,
+                  marginal_ray, chief_ray, H,
                   TransferMatrix(lens), lens)
 end
 
