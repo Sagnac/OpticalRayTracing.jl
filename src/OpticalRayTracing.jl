@@ -4,7 +4,8 @@ using Printf
 
 export TransferMatrix, Lens, Ray, Marginal, Chief, ParaxialRay, Tangential,
        transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
-       scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations
+       scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations,
+       compute_surfaces
 
 include("Types.jl")
 include("TransferMatrix.jl")
@@ -19,6 +20,24 @@ function scale!(M::Matrix{Float64})
 end
 
 reduced_thickness(lens::Lens) = lens.M[:,1]
+
+function compute_surfaces(lens::Lens)
+    (; M, n) = lens
+    τ, ϕ = eachcol(M)
+    len = length(ϕ)
+    surfaces = Matrix{Float64}(undef, len + 1, 3)
+    surfaces[1,:] = [Inf 0.0 n[1]]
+    for i in 2:len
+        nᵢ = n[i]
+        ϕᵢ = ϕ[i-1]
+        R = iszero(ϕᵢ) ? Inf : (nᵢ - n[i-1]) / ϕᵢ
+        t = τ[i] * nᵢ
+        surfaces[i,:] = [R t nᵢ]
+    end
+    nf = n[end]
+    surfaces[end,:] = [(n[end] - n[end-1]) / ϕ[end] 0.0 nf]
+    return surfaces
+end
 
 function Lens(surfaces::Matrix{Float64})
     rows = size(surfaces, 1)
