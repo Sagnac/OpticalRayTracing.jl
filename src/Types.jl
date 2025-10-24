@@ -20,7 +20,7 @@ struct Ray{T <: ParaxialRay}
         u = map(/, nu, n)
         yu = [y u]
         t = map(*, τ, @view(n[1:end-2]))
-        z = [-y[1] / u[1]; cumsum([t; -y[end-1] / u[end-1]])]
+        z = [-y[2] / u[1]; cumsum([t; -y[end-1] / u[end-1]])]
         new(y, n, u, yu, nu, ynu, z)
     end
 end
