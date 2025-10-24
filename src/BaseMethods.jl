@@ -4,7 +4,7 @@ function Base.show(io::IO, system::T) where T <: System
 end
 
 function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
-    println(T)
+    println(io, T)
     if haskey(io, :typeinfo)
         show(io, system)
         return
@@ -24,14 +24,21 @@ function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
     return
 end
 
+Base.show(io::IO, ray::Ray) = summary(io, ray)
+
 function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
-    summary(io, ray)
+    show(io, ray)
+    haskey(io, :typeinfo) && return
     println(io, ".yu:")
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.yu)
 end
 
+Base.show(io::IO, aberr::Aberration) = summary(io, aberr)
+
 function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
-    println(T)
+    show(io, aberr)
+    haskey(io, :typeinfo) && return
+    println(io)
     for property in fieldnames(T)
         property === :sagittal && break
         @printf(io, "\n%4s: %.4f", property, getproperty(aberr, property))
