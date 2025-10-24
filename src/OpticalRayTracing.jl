@@ -108,24 +108,19 @@ end
 
 function raytrace(system::System, ȳ, s,
                   a = fill(Inf, size(system.lens.M, 1)); clip = false)
-    (; lens, EP) = system
-    (; M) = lens
-    n = lens.n
-    t = -EP.t
-    EP_O = s + t
-    y = EP.D / 2
+    (; EP, chief, marginal, H, lens) = system
+    y = marginal.y[1]
+    EP_O = (s - EP.t)
     nu = -y / EP_O
     nū = ȳ / EP_O
-    lens = Lens([[t M[1,2]]; @view(M[2:end,:])], n)
-    marginal_ray_rt = raytrace(lens, y, nu, a; clip)
-    marginal_ray = extend(marginal_ray_rt.ynu)
-    chief_ray_rt = raytrace(lens, 0.0, nū, a; clip)
-    ȳ′ = -nū * y / marginal_ray_rt.nu[end]
-    chief_ray = chief_ray_rt.ynu
-    n′ū′ = chief_ray_rt.nu[end]
-    chief_ray = [chief_ray; [ȳ′ n′ū′]]
+    α = y * nu / H
+    β = y * nū / H
+    marginal_ray = marginal.ynu + α * chief.ynu
+    chief_ray = β * chief.ynu
+    marginal_ray[end,1] = 0.0
+    chief_ray[end,1] = -nū * y / marginal_ray[end,2]
     τ = reduced_thickness(lens)
-    return Ray{Marginal}(marginal_ray, τ, n), Ray{Chief}(chief_ray, τ, n)
+    return Ray{Marginal}(marginal_ray, τ, lens.n), Ray{Chief}(chief_ray, τ, lens.n)
 end
 
 function extend(marginal_ray)
