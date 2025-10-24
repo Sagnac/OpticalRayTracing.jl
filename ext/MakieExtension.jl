@@ -21,9 +21,9 @@ end
     surface_color = :black
 end
 
-_rayplot(system::System; kwargs...) = raytraceplot(system; kwargs...)
+_rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)
 
-_rayplot!(system::System; kwargs...) = raytraceplot!(system; kwargs...)
+_rayplot!(x...; kwargs...) = raytraceplot!(raypoints(x...)...; kwargs...)
 
 function _rayplot(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
     _rayplot(solve(lens, a, h′); kwargs...)
@@ -33,14 +33,19 @@ function _rayplot!(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
     _rayplot!(solve(lens, a, h′); kwargs...)
 end
 
-function _rayplot(surfaces::Matrix{Float64}, a::AbstractVector, h′ = -0.5; kwargs...)
+function _rayplot(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    h′::Float64 = -0.5;
+    kwargs...
+)
     _rayplot(Lens(surfaces), a, h′; kwargs...)
 end
 
 function _rayplot!(
     surfaces::Matrix{Float64},
     a::AbstractVector,
-    h′ = -0.5;
+    h′::Float64 = -0.5;
     kwargs...
 )
     _rayplot!(Lens(surfaces), a, h′; kwargs...)
@@ -48,28 +53,27 @@ end
 
 function _rayplot(
     surfaces::Matrix{Float64},
-    system::System,
-    a::AbstractVector;
+    a::AbstractVector,
+    x...;
     kwargs...
 )
-    raytraceplot(surfaces, system, a; kwargs...)
+    raytraceplot(surfaces, a, raypoints(x...)...; kwargs...)
 end
 
 function _rayplot!(
     surfaces::Matrix{Float64},
-    system::System,
-    a::AbstractVector;
+    a::AbstractVector,
+    x...;
     kwargs...
 )
-    raytraceplot!(surfaces, system, a; kwargs...)
+    raytraceplot!(surfaces, a, raypoints(x...)...; kwargs...)
 end
 
-function plot!(p::RayTracePlot{Tuple{System}})
-    system = p.arg1[]
+function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
+    z, y = p.arg1[], p.arg2[]
     attr = p.attributes
     ray_colors = attr.ray_colors[]
     surface_color = attr.surface_color[]
-    z, y... = raypoints(system)
     i = 0
     for yi in y
         i += 1
@@ -78,18 +82,18 @@ function plot!(p::RayTracePlot{Tuple{System}})
         lines!(p, attr, z, yi; color = ray_color)
     end
     zf = z[end]
-    yf = y[4][end]
+    yf = y[end][end]
     lines!(p, attr, [zf for i = 1:2], [-yf, yf]; color = surface_color)
     DataInspector(textcolor = :black)
     return p
 end
 
-function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, System, <:AbstractVector}})
-    surfaces, system, a = p.arg1[], p.arg2[], p.arg3[]
+function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
+                               T, Vector{T}}}) where T <: Vector{Float64}
+    surfaces, a, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
     attr = p.attributes
     surface_color = attr.surface_color[]
-    z, y... = raypoints(system)
-    (; n) = system.lens
+    n = @view surfaces[:,3]
     R = @view surfaces[2:end,1]
     z_surfaces = @view z[2:end-1]
     z_corners = Float64[]
@@ -123,7 +127,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, System, <:AbstractVector
         lines!(p, attr, z_edge, y_edge; color = surface_color)
         lines!(p, attr, z_edge, -y_edge; color = surface_color)
     end
-    raytraceplot!(p, attr, system)
+    raytraceplot!(p, attr, z, y)
     return p
 end
 

@@ -3,7 +3,7 @@
 
 function raypoints(ray::Ray)
     (; z, y) = ray
-    return z, zero(y), y, -y
+    return z, [zero(y), y, -y]
 end
 
 raypoints(system::System) = raypoints(system.marginal, system.chief)
@@ -34,7 +34,7 @@ function raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
     ȳ = [ȳo1; @view(chief.y[begin+1:end])]
     y3 = ȳ + y1
     y4 = ȳ + y2
-    return z, y0, y1, y2, ȳ, y3, y4
+    return z, [y0, y1, y2, ȳ, y3, y4]
 end
 
 # requires Makie
