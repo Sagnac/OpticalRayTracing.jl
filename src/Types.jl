@@ -1,6 +1,6 @@
 abstract type ParaxialRay end
 
-struct TangentialRay <: ParaxialRay end
+struct Tangential <: ParaxialRay end
 
 struct Marginal <: ParaxialRay end
 

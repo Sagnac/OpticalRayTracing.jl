@@ -2,9 +2,9 @@ module OpticalRayTracing
 
 using Printf
 
-export TransferMatrix, Lens, transfer, reverse_transfer, raytrace,
-       trace_marginal_ray, trace_chief_ray, scale!, Ray, Marginal, Chief,
-       solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations
+export TransferMatrix, Lens, Ray, Marginal, Chief, ParaxialRay, Tangential,
+       transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
+       scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations
 
 include("Types.jl")
 include("TransferMatrix.jl")
@@ -80,7 +80,7 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.M, 1)); clip = fals
         rt[i+1,1] = y
         rt[i+1,2] = ω
     end
-    return Ray{TangentialRay}(rt, τ, n)
+    return Ray{Tangential}(rt, τ, n)
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
