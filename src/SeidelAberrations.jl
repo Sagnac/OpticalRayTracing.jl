@@ -3,7 +3,7 @@ const λ = 587.5618e-6
 
 Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]
 
-function aberrations(surfaces::Matrix{Float64}, system::System,
+function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
                      λ::Float64 = λ,
                      δn::Vector{Float64} = zeros(size(surfaces, 1)))
     (; marginal, chief, H) = system
