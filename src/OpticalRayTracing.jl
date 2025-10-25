@@ -5,7 +5,7 @@ using Printf
 export TransferMatrix, Lens, Ray, Marginal, Chief, ParaxialRay, Tangential,
        transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
        scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations,
-       compute_surfaces
+       compute_surfaces, incidences
 
 include("Types.jl")
 include("TransferMatrix.jl")
@@ -193,5 +193,23 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
 end
 
 solve(surfaces, a, h′ = -0.5) = solve(Lens(surfaces), a, h′)
+
+# paraxial incidence angles
+function incidences(surfaces::Matrix{Float64}, system::SystemOrRayBasis)
+    R = @view surfaces[2:end,1]
+    (; marginal, chief) = system
+    (; n) = marginal
+    nu, y = marginal.nu, @view marginal.y[2:end-1]
+    nū, ȳ = chief.nu, @view chief.y[2:end-1]
+    ni = map(nu, n, y, R) do nu, n, y, R
+             return nu + n * y / R
+         end
+    nī = map(nū, n, ȳ, R) do nū, n, ȳ, R
+             return nū + n * ȳ / R
+         end
+    i = map(/, ni, n)
+    ī = map(/, nī, n)
+    return [ni nī i ī]
+end
 
 end
