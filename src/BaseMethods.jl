@@ -33,6 +33,14 @@ function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.yu)
 end
 
+Base.show(io::IO, ray_basis::RayBasis) = summary(io, ray_basis)
+
+function Base.show(io::IO, m::MIME"text/plain", ray_basis::T) where T <: RayBasis
+    show(io, ray_basis)
+    haskey(io, :typeinfo) && return
+    print(io, '\n', fieldtypes(T)[1:2])
+end
+
 Base.show(io::IO, aberr::Aberration) = summary(io, aberr)
 
 function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration

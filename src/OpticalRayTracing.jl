@@ -117,10 +117,16 @@ function raytrace(system::System, ȳ, s,
     β = y * nū / H
     marginal_ray = marginal.ynu + α * chief.ynu
     chief_ray = β * chief.ynu
+    H = nū * y
     marginal_ray[end,1] = 0.0
-    chief_ray[end,1] = -nū * y / marginal_ray[end,2]
+    chief_ray[end,1] = -H / marginal_ray[end,2]
     τ = reduced_thickness(lens)
-    return Ray{Marginal}(marginal_ray, τ, lens.n), Ray{Chief}(chief_ray, τ, lens.n)
+    rays = RayBasis(
+        Ray{Marginal}(marginal_ray, τ, lens.n),
+        Ray{Chief}(chief_ray, τ, lens.n),
+        H
+    )
+    return rays
 end
 
 function extend(marginal_ray)

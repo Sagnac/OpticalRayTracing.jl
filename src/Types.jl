@@ -25,6 +25,12 @@ struct Ray{T <: ParaxialRay}
     end
 end
 
+struct RayBasis
+    marginal::Ray{Marginal}
+    chief::Ray{Chief}
+    H::Float64
+end
+
 struct TransferMatrix
     M::Matrix{Float64}
 end
@@ -76,3 +82,5 @@ struct Aberration
     W020::Vector{Float64}
     W111::Vector{Float64}
 end
+
+const SystemOrRayBasis = Union{System, RayBasis}
