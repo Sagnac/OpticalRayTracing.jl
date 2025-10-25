@@ -50,6 +50,7 @@ struct System
     XP::Pupil
     marginal::Ray{Marginal}
     chief::Ray{Chief}
+    trace::Matrix{Float64}
     H::Float64
     M::TransferMatrix
     lens::Lens

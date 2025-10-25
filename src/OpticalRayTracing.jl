@@ -182,7 +182,7 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     N = abs(f / EP.D)
     FOV = 2atand(abs(chief_ray.u[1]))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
-                  marginal_ray, chief_ray, H,
+                  marginal_ray, chief_ray, [marginal_ray.ynu chief_ray.ynu], H,
                   TransferMatrix(lens), lens)
 end
 
