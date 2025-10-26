@@ -106,8 +106,7 @@ function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
     raytrace(Lens(surfaces), y, ω, a)
 end
 
-function raytrace(system::System, ȳ, s,
-                  a = fill(Inf, size(system.lens, 1)); clip = false)
+function raytrace(system::System, ȳ, s)
     (; EP, chief, marginal, H, lens) = system
     y = marginal.y[1]
     EP_O = (s - EP.t)
