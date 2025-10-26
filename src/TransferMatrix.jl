@@ -7,23 +7,16 @@ end
 
 extend(M, τ, τ′) = [1.0 τ′; 0.0 1.0] * M * [1.0 τ; 0.0 1.0]
 
-transfer(M::Matrix, v::Vector, τ, τ′) = extend(M, τ, τ′) * v
+transfer(M::MatrixOrTransferMatrix, v::Vector, τ, τ′) = extend(M, τ, τ′) * v
 transfer(system::System, v::Vector, τ, τ′) = transfer(system.M, v, τ, τ′)
-transfer(M::TransferMatrix, v::Vector, τ, τ′) = transfer(M.M, v, τ, τ′)
 
-reverse_transfer(M::Matrix, v::Vector, τ′, τ) = extend(M, τ, τ′) \ v
+reverse_transfer(M::MatrixOrTransferMatrix, v::Vector, τ′, τ) = extend(M, τ, τ′) \ v
 
 function reverse_transfer(system::System, v::Vector, τ′, τ)
     reverse_transfer(system.M, v, τ′, τ)
 end
 
-function reverse_transfer(M::TransferMatrix, v::Vector, τ′, τ)
-    reverse_transfer(M.M, v, τ′, τ)
-end
-
-flatten(transfer_matrix::TransferMatrix) = flatten(transfer_matrix.M)
-
-function flatten(M::Matrix)
+function flatten(M::MatrixOrTransferMatrix)
     f = -inv(M[2,1])
     EFFD = -M[2,2] * f
     EBFD = M[1,1] * f

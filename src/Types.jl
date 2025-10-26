@@ -31,11 +31,11 @@ struct RayBasis
     H::Float64
 end
 
-struct TransferMatrix
+struct TransferMatrix <: AbstractArray{Float64, 2}
     M::Matrix{Float64}
 end
 
-struct Lens
+struct Lens <: AbstractArray{Float64, 2}
     M::Matrix{Float64}
     n::Vector{Float64}
 end
@@ -84,3 +84,7 @@ struct Aberration
 end
 
 const SystemOrRayBasis = Union{System, RayBasis}
+
+const LensOrTransferMatrix = Union{Lens, TransferMatrix}
+
+const MatrixOrTransferMatrix = Union{Matrix, TransferMatrix}

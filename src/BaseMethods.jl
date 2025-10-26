@@ -55,3 +55,9 @@ function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
 end
 
 Base.getindex(M::TransferMatrix) = M.M
+
+Base.getindex(M::LensOrTransferMatrix, i::Int) = M.M[i]
+
+Base.size(M::LensOrTransferMatrix) = size(M.M)
+
+Base.IndexStyle(::Type{<:LensOrTransferMatrix}) = IndexLinear()

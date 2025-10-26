@@ -19,7 +19,7 @@ function scale!(M::Matrix{Float64})
     return M
 end
 
-reduced_thickness(lens::Lens) = lens.M[:,1]
+reduced_thickness(lens::Lens) = lens[:,1]
 
 function compute_surfaces(lens::Lens)
     (; M, n) = lens
@@ -85,7 +85,7 @@ function rev(objective_chief_ray)
     reshape(v, 2, size(objective_chief_ray, 1) + 1)'
 end
 
-function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens.M, 1)); clip = false)
+function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
     τ, ϕ = eachcol(M)
     rt = similar(M, size(M, 1) + 1, size(M, 2))
@@ -107,7 +107,7 @@ function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
 end
 
 function raytrace(system::System, ȳ, s,
-                  a = fill(Inf, size(system.lens.M, 1)); clip = false)
+                  a = fill(Inf, size(system.lens, 1)); clip = false)
     (; EP, chief, marginal, H, lens) = system
     y = marginal.y[1]
     EP_O = (s - EP.t)
