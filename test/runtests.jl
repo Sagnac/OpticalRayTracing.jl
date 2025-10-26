@@ -39,6 +39,8 @@ const δn = [0.0, dn1, 0.0, dn2, 0.0, 0.0, dn1, 0.0]
 
 const system = solve(surfaces, a, h′)
 
+const (; f, N, marginal, chief, EFFD, EBFD, EP, XP) = system
+
 const EFL = 101.181
 const BFL = 77.405
 const NA = 0.1443
@@ -49,8 +51,8 @@ const VL = 39.08 # system vertex length
 const system_scale = 1e-3
 
 @testset "system properties" begin
-    @test system.f ≈ EFL atol = system_scale
-    @test system.EBFD ≈ BFL atol = system_scale
+    @test f ≈ EFL atol = system_scale
+    @test EBFD ≈ BFL atol = system_scale
     @test system.N ≈ 1/2NA atol = system_scale
     @test system.FOV ≈ 2HFOV atol = system_scale
     @test sum(@view(surfaces[2:end,2])) ≈ VL atol = system_scale
@@ -88,11 +90,15 @@ const PIC = @view(@view(ȳūī[:,3])[begin+1:end-1])
 
 const A, Ā = eachcol(@view(incidences(surfaces, system)[:,3:4]))
 
-const (; marginal, chief) = system
+const h = 10.0
+const s = -f + EFFD
+const rays_2f = raytrace(system, h, s)
+const rand_h, rand_s = (-1000 * rand() for i = 1:2)
+const rand_rays = raytrace(system, rand_h, rand_s)
 
 const trace_scale = 1e-2
 
-@testset "raytrace" begin
+@testset "raytrace validation" begin
     for i in eachindex(y)
         @test marginal.y[i] ≈ y[i] atol = trace_scale
         @test marginal.u[i] ≈ u[i] atol = trace_scale
@@ -103,6 +109,32 @@ const trace_scale = 1e-2
         @test A[i] ≈ PI[i] atol = trace_scale
         @test Ā[i] ≈ PIC[i] atol = trace_scale
     end
+end
+
+@testset "general system ray tracing" begin
+    s′ = f + EBFD
+    XP_I = s′ - XP.t
+    (; y, u, nu) = rays_2f.marginal
+    ȳ, ū, nū = rays_2f.chief.y, rays_2f.chief.u, rays_2f.chief.nu
+    @test iszero(y[end])
+    @test u[end] ≈ -XP.D / 2XP_I
+    @test u[end] ≈ -u[1]
+    @test u[end] ≈ rays_2f.H / h
+    @test ȳ[end] ≈ -h
+    @test ū[end] ≈ -h / XP_I
+    H_v = @. nū * y - nu * ȳ
+    @test all(≈(rays_2f.H), H_v)
+    EP_O = (rand_s - EP.t)
+    u_in = -system.marginal.y[1] / EP_O
+    ū_in = rand_h / EP_O
+    y_in = -u_in * rand_s
+    ȳ_in = -ū_in * EP.t
+    yb, ub = system.M * [y_in, u_in]
+    ȳb, ūb = transfer(system, [rand_h, ū_in], -rand_s, 0.0)
+    @test rand_rays.marginal.y[end-1] ≈ yb
+    @test rand_rays.marginal.u[end] ≈ ub
+    @test rand_rays.chief.y[end-1] ≈ ȳb
+    @test rand_rays.chief.u[end] ≈ ūb
 end
 
 # The third order aberration data in the book are Seidel S_I-S_V coefficients in the
@@ -146,8 +178,6 @@ const lateral = 0.027401
 # Absolute tolerance of a quarter wave which is close to the data minimum
 const aberr_scale = 0.25
 
-const (; N) = system
-
 const α = -inv(λ * N)
 
 const aberr = aberrations(surfaces, system, λ, δn)
@@ -174,5 +204,12 @@ const ρ =  h′ ^ 2 / 2longitudinal_petzval
     @test aberr.distortion ≈ (α * distortion / 2) atol = aberr_scale
     @test aberr.axial ≈ (α * axial / 4) atol = aberr_scale
     @test aberr.lateral ≈ (α * lateral / 2) atol = aberr_scale
-    @test ρ / system.f ≈ PTZ_F atol = system_scale
+    @test ρ / f ≈ PTZ_F atol = system_scale
+end
+
+@testset "transfer matrix" begin
+    (; f, EBFD, EFFD) = flatten(system.M)
+    @test f ≈ system.f
+    @test EBFD ≈ system.EBFD
+    @test EFFD ≈ system.EFFD
 end
