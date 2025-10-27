@@ -1,9 +1,11 @@
-function Base.show(io::IO, system::T) where T <: System
+import Base: show, getindex, size, IndexStyle, iterate
+
+function show(io::IO, system::T) where T <: System
     print(io, "f: ")
     show(IOContext(io, :compact => true), system.f)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
+function show(io::IO, ::MIME"text/plain", system::T) where T <: System
     println(io, T)
     if haskey(io, :typeinfo)
         show(io, system)
@@ -24,26 +26,26 @@ function Base.show(io::IO, ::MIME"text/plain", system::T) where T <: System
     return
 end
 
-Base.show(io::IO, ray::Ray) = summary(io, ray)
+show(io::IO, ray::Ray) = summary(io, ray)
 
-function Base.show(io::IO, m::MIME"text/plain", ray::Ray)
+function show(io::IO, m::MIME"text/plain", ray::Ray)
     show(io, ray)
     haskey(io, :typeinfo) && return
     println(io, ".yu:")
     show(IOContext(io, :displaysize => displaysize(io) .- (1, 0)), m, ray.yu)
 end
 
-Base.show(io::IO, ray_basis::RayBasis) = summary(io, ray_basis)
+show(io::IO, ray_basis::RayBasis) = summary(io, ray_basis)
 
-function Base.show(io::IO, m::MIME"text/plain", ray_basis::T) where T <: RayBasis
+function show(io::IO, m::MIME"text/plain", ray_basis::T) where T <: RayBasis
     show(io, ray_basis)
     haskey(io, :typeinfo) && return
     print(io, '\n', fieldtypes(T)[1:2])
 end
 
-Base.show(io::IO, aberr::Aberration) = summary(io, aberr)
+show(io::IO, aberr::Aberration) = summary(io, aberr)
 
-function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
+function show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
     show(io, aberr)
     haskey(io, :typeinfo) && return
     println(io)
@@ -54,10 +56,18 @@ function Base.show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
     return
 end
 
-Base.getindex(M::TransferMatrix) = M.M
+getindex(M::TransferMatrix) = M.M
 
-Base.getindex(M::LensOrTransferMatrix, i::Int) = M.M[i]
+getindex(M::LensOrTransferMatrix, i::Int) = M.M[i]
 
-Base.size(M::LensOrTransferMatrix) = size(M.M)
+size(M::LensOrTransferMatrix) = size(M.M)
 
-Base.IndexStyle(::Type{<:LensOrTransferMatrix}) = IndexLinear()
+IndexStyle(::Type{<:LensOrTransferMatrix}) = IndexLinear()
+
+function getindex(rays::T, i::Int) where T <: RayBasis
+    i > 2 ? throw(BoundsError(rays, i)) : getfield(rays, i)
+end
+
+function iterate(rays::T, i::Int = 1) where T <: RayBasis
+    i > 2 ? nothing : (getfield(rays, i), i + 1)
+end

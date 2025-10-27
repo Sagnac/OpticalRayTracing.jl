@@ -6,7 +6,7 @@ function raypoints(ray::Ray)
     return z, [zero(y), y, -y]
 end
 
-raypoints(system::System) = raypoints(system.marginal, system.chief)
+raypoints(system::SystemOrRayBasis) = raypoints(system.marginal, system.chief)
 
 function raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
     (; z, n) = marginal

@@ -1,4 +1,4 @@
-function vignetting(system::System, a::AbstractVector)
+function vignetting(system::SystemOrRayBasis, a::AbstractVector)
     (; marginal, chief) = system
     k = length(a)
     ȳ = abs.(@view(chief.y[begin+1:end-1]))
