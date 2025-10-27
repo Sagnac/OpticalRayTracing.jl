@@ -1,13 +1,15 @@
 function vignetting(system::SystemOrRayBasis, a::AbstractVector)
     (; marginal, chief) = system
-    k = length(a)
     ȳ = abs.(@view(chief.y[begin+1:end-1]))
     y = abs.(@view(marginal.y[begin+1:end-1]))
-    vig = Matrix{Float64}(undef, k, 4)
+    vig = Matrix{Float64}(undef, length(a), 5)
     vig[:,1] .= a
-    unvignetted = vig[:,2] .= y .+ ȳ
-    half_vignetted = vig[:,3] .= max.(ȳ, y)
-    fully_vignetted = vig[:,4] .= max.(ȳ .- y, y)
+    vig[:,2] .= y
+    unvignetted = vig[:,3] .= y .+ ȳ
+    half_vignetted = vig[:,4] .= ȳ
+    fully_vignetted = vig[:,5] .= ȳ .- y
+    half_vignetted[half_vignetted .< y] .= NaN
+    fully_vignetted[fully_vignetted .< y] .= NaN
     a_unvig = a .≥ unvignetted
     if all(a_unvig)
         printstyled("\nUnvignetted.\n\n"; bold = true, color = :green)
@@ -20,12 +22,13 @@ function vignetting(system::SystemOrRayBasis, a::AbstractVector)
             println('\n')
         end
         if !isempty(full)
-            printstyled("\nFully vignetted or limit:\n"; bold = true, color = :red)
+            printstyled("\nFully vignetted:\n"; bold = true, color = :red)
             show(full)
             println('\n')
         end
     end
-    s = ' ' ^ 8
-    printstyled("a", s, "un", s, "half", s, "full\n"; bold = true, color = :cyan)
+    s1, s2, s3, s4 = (' ' ^ i for i = (7, 4, 7, 5))
+    printstyled("a", s1, "limit", s2, "un", s3, "half", s4, "full\n";
+                bold = true, color = :cyan)
     return vig
 end
