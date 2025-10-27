@@ -1,11 +1,6 @@
 # the actual plotting functions are in ext/MakieExtension.jl
 # these return the plot points
 
-function raypoints(ray::Ray)
-    (; z, y) = ray
-    return z, [zero(y), y, -y]
-end
-
 raypoints(system::SystemOrRayBasis) = raypoints(system.marginal, system.chief)
 
 function raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
