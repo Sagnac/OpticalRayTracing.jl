@@ -72,19 +72,6 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
-function rev(objective, stop, n)
-    v = @view (reverse ∘ transpose)(view(objective, 1:stop, :))[begin+1:end-1]
-    Lens(reshape(v, 2, stop-1)', n)
-end
-
-function rev(objective_chief_ray)
-    v = transpose(objective_chief_ray)[:]
-    push!(v, 0.0)
-    reverse!(v)
-    push!(v, objective_chief_ray[1,2])
-    reshape(v, 2, size(objective_chief_ray, 1) + 1)'
-end
-
 function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
     τ, ϕ = eachcol(M)
@@ -149,26 +136,27 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     return Ray{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
-function trace_chief_ray(lens::Lens, stop, EBFD, h′ = -0.5)
-    (; M, n) = lens
-    M = [M; [EBFD 0.0]]
-    rear_lens = Lens(M[stop+1:end,:], n)
-    objective = rev(M, stop, n)
-    rt = raytrace(rear_lens, 0.0, -1.0)
-    rear_chief_ray = rt.ynu
-    ȳ′ = rt.y[end]
-    s = h′ / ȳ′
-    rear_chief_ray *= s
-    objective_chief_ray = rev(raytrace(objective, 0.0, s).ynu)
-    objective_chief_ray[:,2] .*= -1.0
-    chief_ray = [objective_chief_ray; @view(rear_chief_ray[begin+1:end,:])]
+function trace_chief_ray(lens::Lens, stop::Int, marginal::Ray{Marginal}, h′ = -0.5)
+    (; n) = lens
+    y = @view marginal.y[2:end-1]
+    ynu = @view marginal.ynu[2:end-1,:]
+    y_stop = y[stop]
+    rt = raytrace(lens, 0.0, 1.0)
+    y2 = @view rt.y[2:end]
+    ynu2 = @view rt.ynu[2:end,:]
+    y2_stop = y2[stop]
+    nū = -marginal.nu[end] * h′ / y[1]
+    chief_ray = Matrix{Float64}(undef, size(marginal.ynu))
+    @. chief_ray[begin+1:end-1,:] = nū * (ynu2 - ynu * y2_stop / y_stop)
+    chief_ray[begin,:] .= 0.0, nū
+    chief_ray[end,:] .= h′, chief_ray[end-1,2]
     τ = reduced_thickness(lens)
     return Ray{Chief}(chief_ray, τ, n)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     marginal_ray, stop, f, EBFD = trace_marginal_ray(lens, a)
-    chief_ray = trace_chief_ray(lens, stop, EBFD, h′)
+    chief_ray = trace_chief_ray(lens, stop, marginal_ray, h′)
     ȳ = chief_ray.y[begin+1]
     nū = chief_ray.nu[begin]
     ȳ′ = chief_ray.y[end]
