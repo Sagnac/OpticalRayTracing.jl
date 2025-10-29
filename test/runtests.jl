@@ -1,6 +1,6 @@
-using Test
+using Test, Suppressor
 using OpticalRayTracing
-using OpticalRayTracing: λ
+using OpticalRayTracing: λ, _vignetting
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
@@ -56,6 +56,7 @@ const system_scale = 1e-3
     @test system.N ≈ 1/2NA atol = system_scale
     @test system.FOV ≈ 2HFOV atol = system_scale
     @test sum(@view(surfaces[2:end,2])) ≈ VL atol = system_scale
+    @test system.stop == 5
 end
 
 const yui = [
@@ -212,4 +213,17 @@ end
     @test f ≈ system.f
     @test EBFD ≈ system.EBFD
     @test EFFD ≈ system.EFFD
+end
+
+@testset "vignetting" begin
+    partial = @suppress _vignetting(system, a)[4]
+    @test partial == [1, 2, 3, 6, 7]
+    FOVs = vignetting(system, a, FOV)[2]
+    systems = [solve(surfaces, a, h′) for h′ in FOVs]
+    vignetting_matrices = @suppress [vignetting(system, a) for system in systems]
+    a_ = (a for (i, a) in enumerate(a) if i != system.stop)
+    for i = 1:3
+        M = vignetting_matrices[i]
+        @test any(a_ .≈ view(M, [1:system.stop-1; system.stop+1:length(a)], i+2))
+    end
 end

@@ -83,6 +83,8 @@ struct Aberration
     W111::Vector{Float64}
 end
 
+struct FOV end
+
 const SystemOrRayBasis = Union{System, RayBasis}
 
 const LensOrTransferMatrix = Union{Lens, TransferMatrix}
