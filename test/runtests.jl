@@ -213,6 +213,7 @@ end
     @test f ≈ system.f
     @test EBFD ≈ system.EBFD
     @test EFFD ≈ system.EFFD
+    @test -/(reverse_transfer(system.M, [1.0, 0.0], 0.0, 0.0)...) ≈ EFFD
 end
 
 @testset "vignetting" begin
