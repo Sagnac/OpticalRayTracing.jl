@@ -17,7 +17,7 @@ function rayplot!(x...; theme = Attributes(), kwargs...)
 end
 
 @recipe RayTracePlot begin
-    ray_colors = (:green, :blue)
+    ray_colors = (:blue, :green)
     surface_color = :black
 end
 
@@ -77,9 +77,9 @@ function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
     i = 0
     for yi in y
         i += 1
-        ray_color = i > 3 ? ray_colors[1] : ray_colors[2]
-        scatter!(p, z, yi; color = ray_color)
+        ray_color = i > 3 ? ray_colors[2] : ray_colors[1]
         lines!(p, attr, z, yi; color = ray_color)
+        scatter!(p, z, yi; color = ray_color)
     end
     zf = z[end]
     yf = y[end][end]
