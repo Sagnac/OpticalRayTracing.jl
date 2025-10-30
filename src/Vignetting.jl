@@ -1,7 +1,7 @@
 function _vignetting(system::SystemOrRayBasis, a::AbstractVector)
     (; marginal, chief, stop) = system
-    ȳ = abs.(@view(chief.y[begin+1:end-1]))
-    y = abs.(@view(marginal.y[begin+1:end-1]))
+    ȳ = abs.(surface_ray(chief.y))
+    y = abs.(surface_ray(marginal.y))
     vig = Matrix{Float64}(undef, length(a), 5)
     vig[:,1] .= a
     limited = vig[:,2] .= y

@@ -39,6 +39,10 @@ function compute_surfaces(lens::Lens)
     return surfaces
 end
 
+surface_ray(v::AbstractVector) = @view v[begin+1:end-1]
+
+surface_ray(M::AbstractMatrix) = @view M[begin+1:end-1,:]
+
 function Lens(surfaces::Matrix{Float64})
     rows = size(surfaces, 1)
     R, t, n = eachcol(surfaces)
@@ -138,8 +142,8 @@ end
 
 function trace_chief_ray(lens::Lens, stop::Int, marginal::Ray{Marginal}, h′ = -0.5)
     (; n) = lens
-    y = @view marginal.y[2:end-1]
-    ynu = @view marginal.ynu[2:end-1,:]
+    y = surface_ray(marginal.y)
+    ynu = surface_ray(marginal.ynu)
     y_stop = y[stop]
     rt = raytrace(lens, 0.0, 1.0)
     y2 = @view rt.y[2:end]
@@ -186,8 +190,8 @@ function incidences(surfaces::Matrix{Float64}, system::SystemOrRayBasis)
     R = @view surfaces[2:end,1]
     (; marginal, chief) = system
     (; n) = marginal
-    nu, y = marginal.nu, @view marginal.y[2:end-1]
-    nū, ȳ = chief.nu, @view chief.y[2:end-1]
+    nu, y = marginal.nu, surface_ray(marginal.y)
+    nū, ȳ = chief.nu, surface_ray(chief.y)
     ni = map(nu, n, y, R) do nu, n, y, R
              return nu + n * y / R
          end

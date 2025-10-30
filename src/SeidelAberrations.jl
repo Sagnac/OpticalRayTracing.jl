@@ -9,8 +9,8 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
     (; marginal, chief, H) = system
     R = @view surfaces[2:end,1]
     n = marginal.n
-    y = @view marginal.y[2:end-1]
-    ȳ = @view chief.y[2:end-1]
+    y = surface_ray(marginal.y)
+    ȳ = surface_ray(chief.y)
     nu = marginal.nu
     nū = chief.nu
     u = marginal.u

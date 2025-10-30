@@ -1,6 +1,6 @@
 using Test, Suppressor
 using OpticalRayTracing
-using OpticalRayTracing: λ, _vignetting
+using OpticalRayTracing: λ, _vignetting, surface_ray
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
@@ -86,8 +86,8 @@ const ȳūī = [
 const y, u = eachcol(yui)
 const ȳ, ū = eachcol(ȳūī)
 
-const PI = @view(@view(yui[:,3])[begin+1:end-1])
-const PIC = @view(@view(ȳūī[:,3])[begin+1:end-1])
+const PI = surface_ray(@view(yui[:,3]))
+const PIC = surface_ray(@view(ȳūī[:,3]))
 
 const A, Ā = eachcol(@view(incidences(surfaces, system)[:,3:4]))
 
