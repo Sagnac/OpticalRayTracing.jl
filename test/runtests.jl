@@ -125,6 +125,8 @@ end
     @test ū[end] ≈ -h / XP_I
     H_v = @. nū * y - nu * ȳ
     @test all(≈(rays_2f.H), H_v)
+    H_v_rand = @. rand_rays[2].nu * rand_rays[1].y - rand_rays[1].nu * rand_rays[2].y
+    @test all(≈(rand_rays.H), H_v_rand)
     EP_O = (rand_s - EP.t)
     u_in = -system.marginal.y[1] / EP_O
     ū_in = rand_h / EP_O
@@ -132,10 +134,17 @@ end
     ȳ_in = -ū_in * EP.t
     yb, ub = system.M * [y_in, u_in]
     ȳb, ūb = transfer(system, [rand_h, ū_in], -rand_s, 0.0)
+    rt_marginal = raytrace(system.lens, y_in, u_in)
+    rt_chief = raytrace(system.lens, ȳ_in, ū_in)
     @test rand_rays.marginal.y[end-1] ≈ yb
     @test rand_rays.marginal.u[end] ≈ ub
     @test rand_rays.chief.y[end-1] ≈ ȳb
     @test rand_rays.chief.u[end] ≈ ūb
+    @test all(@views rand_rays.marginal.y[2:end-1] .≈ rt_marginal.y[2:end])
+    @test all(@view(rand_rays.marginal.nu[1:end-1,:]) .≈ rt_marginal.nu)
+    @test all(isapprox.(surface_ray(rand_rays.chief.y), # zero comparison at stop
+                        @view(rt_chief.y[2:end]); atol = 1e-12))
+    @test all(@view(rand_rays.chief.nu[1:end-1,:]) .≈ rt_chief.nu)
 end
 
 # The third order aberration data in the book are Seidel S_I-S_V coefficients in the
