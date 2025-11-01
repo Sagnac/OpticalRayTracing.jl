@@ -14,7 +14,7 @@ include("SeidelAberrations.jl")
 include("BaseMethods.jl")
 include("RayPlot.jl")
 
-function scale!(M::Matrix{Float64})
+function scale!(M::Lens)
     M[:,2] .*= 1E-3
     return M
 end

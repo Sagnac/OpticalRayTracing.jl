@@ -1,4 +1,4 @@
-import Base: show, getindex, size, IndexStyle, iterate
+import Base: show, getindex, setindex!, size, IndexStyle, iterate
 
 function show(io::IO, system::T) where T <: System
     print(io, "f: ")
@@ -59,6 +59,8 @@ end
 getindex(M::TransferMatrix) = M.M
 
 getindex(M::LensOrTransferMatrix, i::Int) = M.M[i]
+
+setindex!(M::Lens, v, i::Int) = M.M[i] = v
 
 size(M::LensOrTransferMatrix) = size(M.M)
 

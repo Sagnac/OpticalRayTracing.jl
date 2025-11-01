@@ -91,5 +91,3 @@ struct FOV end
 const SystemOrRayBasis = Union{System, RayBasis}
 
 const LensOrTransferMatrix = Union{Lens, TransferMatrix}
-
-const MatrixOrTransferMatrix = Union{Matrix, TransferMatrix}
