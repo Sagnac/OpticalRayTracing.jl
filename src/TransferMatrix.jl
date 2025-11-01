@@ -20,5 +20,7 @@ function flatten(M::MatrixOrTransferMatrix)
     f = -inv(M[2,1])
     EFFD = -M[2,2] * f
     EBFD = M[1,1] * f
-    return (; f, EFFD, EBFD)
+    P1 = EFFD + f
+    P2 = EBFD - f
+    return (; f, EFFD, EBFD, P1, P2)
 end

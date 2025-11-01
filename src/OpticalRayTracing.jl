@@ -167,9 +167,10 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     n′ū′ = chief_ray.nu[end]
     y = marginal_ray.y[begin]
     ȳ′b = chief_ray.y[end-1]
-    # δ′ = EBFD - f
+    δ′ = EBFD - f
     δ = (ȳ′ - n′ū′ * f - ȳ) / nū
     EFFD = δ - f
+    PN = (lens.n[end] - lens.n[begin]) * f
     EP = Pupil(abs(y) * 2, -ȳ / nū)
     H = nū * y
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
@@ -177,7 +178,7 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     FOV = 2atand(abs(chief_ray.u[1]))
     return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
                   marginal_ray, chief_ray, [marginal_ray.ynu chief_ray.ynu], H,
-                  TransferMatrix(lens), lens)
+                  δ, δ′, PN, TransferMatrix(lens), lens)
 end
 
 solve(surfaces, a, h′ = -0.5) = solve(Lens(surfaces), a, h′)

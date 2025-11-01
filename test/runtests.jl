@@ -218,10 +218,12 @@ const ρ =  h′ ^ 2 / 2longitudinal_petzval
 end
 
 @testset "transfer matrix" begin
-    (; f, EBFD, EFFD) = flatten(system.M)
+    (; f, EBFD, EFFD, P1, P2) = flatten(system.M)
     @test f ≈ system.f
     @test EBFD ≈ system.EBFD
     @test EFFD ≈ system.EFFD
+    @test P1 ≈ system.P1
+    @test P2 ≈ system.P2
     @test -/(reverse_transfer(system.M, [1.0, 0.0], 0.0, 0.0)...) ≈ EFFD
 end
 

@@ -58,6 +58,9 @@ struct System
     chief::Ray{Chief}
     trace::Matrix{Float64}
     H::Float64
+    P1::Float64
+    P2::Float64
+    PN::Float64
     M::TransferMatrix
     lens::Lens
 end
