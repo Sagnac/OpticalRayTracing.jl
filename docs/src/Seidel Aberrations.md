@@ -10,4 +10,4 @@ The total system coefficients can be extracted by querying the relevant `WIJK` f
 aberrations(surfaces, system)
 ```
 
-The return value holds the relevant metadata in an `Aberration` structure. The long form named fields (`spherical`, `coma`, `astigmatism`, etc.) hold the per surface coefficient vectors. `W220P` / `petzval`, `W220T` / `tangential`, & `W220` / `sagittal` refer to the respective field curvatures while the `W020` & `W111` coefficients refer to defocus & tilt from axial & lateral color, respectively.
+The return value holds the relevant metadata in an `Aberration` structure which can be evaluated over the pupil if called with polar coordinates and a normalized field value. The long form named fields (`spherical`, `coma`, `astigmatism`, etc.) hold the per surface coefficient vectors. `W220P` / `petzval`, `W220T` / `tangential`, & `W220` / `sagittal` refer to the respective field curvatures while the `W020` & `W111` coefficients refer to defocus & tilt from axial & lateral color, respectively.

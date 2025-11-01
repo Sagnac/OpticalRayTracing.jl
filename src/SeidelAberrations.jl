@@ -50,3 +50,16 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
                spherical, coma, astigmatism, sagittal, distortion, axial, lateral,
                petzval, medial, tangential)
 end
+
+function (W::Aberration)(ρ, θ, H = 1)
+    (; W040, W131, W222, W220, W311, W020, W111) = W
+    w1 = W040 * ρ ^ 4
+    w2 = W131 * H * ρ ^ 3 * cos(θ)
+    w3 = W222 * H ^ 2 * ρ ^ 2 * cos(θ) ^ 2
+    w4 = W220 * H ^ 2 * ρ ^ 2
+    w5 = W311 * H ^ 3 * ρ * cos(θ)
+    w6 = W020 * ρ ^ 2
+    w7 = W111 * H * ρ * cos(θ)
+    w = w1 + w2 + w3 + w4 + w5 + w6 + w7
+    return w
+end
