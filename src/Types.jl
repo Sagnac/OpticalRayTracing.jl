@@ -66,24 +66,26 @@ struct System
 end
 
 struct Aberration
-    spherical::Float64
-    coma::Float64
-    astigmatism::Float64
-    petzval::Float64
-    distortion::Float64
-    axial::Float64
-    lateral::Float64
-    sagittal::Float64
-    medial::Float64
-    tangential::Float64
-    W040::Vector{Float64}
-    W131::Vector{Float64}
-    W222::Vector{Float64}
-    W220P::Vector{Float64}
-    W220::Vector{Float64}
-    W311::Vector{Float64}
-    W020::Vector{Float64}
-    W111::Vector{Float64}
+    W040::Float64
+    W131::Float64
+    W222::Float64
+    W220::Float64 # W220S
+    W311::Float64
+    W020::Float64 # axial color
+    W111::Float64 # lateral color
+    W220P::Float64
+    W220M::Float64
+    W220T::Float64
+    spherical::Vector{Float64}
+    coma::Vector{Float64}
+    astigmatism::Vector{Float64}
+    sagittal::Vector{Float64}
+    distortion::Vector{Float64}
+    axial::Vector{Float64}
+    lateral::Vector{Float64}
+    petzval::Vector{Float64}
+    medial::Vector{Float64}
+    tangential::Vector{Float64}
 end
 
 struct FOV end

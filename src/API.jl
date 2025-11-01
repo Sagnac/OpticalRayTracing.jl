@@ -36,9 +36,9 @@ Lens
 """
     aberrations(surfaces, system, [λ], [δn])
 
-Compute third order wavefront error coefficients based on Seidel sums for a given system or ray basis. Results are in waves at the d-line by default. The dispersion vector `δn` allows calculation of chromatic aberration.
+Compute the third order wavefront error coefficients based on Seidel sums for a given system or ray basis. Results are in waves at the d-line by default. The dispersion vector `δn` allows calculation of chromatic aberration.
 
-The returned `Aberration` type holds the per surface contributions in the `WIJK` fields (e.g. `W040`) while the system totals are held in the long form `spherical`, `astigmatism`, etc. fields.
+The returned `Aberration` type holds the system totals in the `WIJK` fields (e.g. `W040`) while the per surface contributions are held in the long form fields (e.g. `spherical`).
 """
 aberrations
 

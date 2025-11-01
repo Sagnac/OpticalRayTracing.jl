@@ -50,7 +50,7 @@ function show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
     haskey(io, :typeinfo) && return
     println(io)
     for property in fieldnames(T)
-        property === :sagittal && break
+        property === :W220P && break
         @printf(io, "\n%4s: %.4f", property, getproperty(aberr, property))
     end
     return
