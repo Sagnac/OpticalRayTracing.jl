@@ -5,7 +5,7 @@ using Printf
 export TransferMatrix, Lens, Ray, Marginal, Chief, ParaxialRay, Tangential, FOV,
        transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
        scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations,
-       compute_surfaces, incidences
+       compute_surfaces, incidences, Aberration, RayError, Sagittal
 
 include("Types.jl")
 include("TransferMatrix.jl")

@@ -2,6 +2,8 @@ abstract type ParaxialRay end
 
 struct Tangential <: ParaxialRay end
 
+struct Sagittal <: ParaxialRay end
+
 struct Marginal <: ParaxialRay end
 
 struct Chief <: ParaxialRay end
@@ -86,6 +88,13 @@ struct Aberration
     petzval::Vector{Float64}
     medial::Vector{Float64}
     tangential::Vector{Float64}
+end
+
+const OrthogonalRay = Union{Tangential, Sagittal}
+
+struct RayError{T <: OrthogonalRay}
+    W::Aberration
+    nu::Float64
 end
 
 struct FOV end

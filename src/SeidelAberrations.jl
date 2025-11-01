@@ -63,3 +63,31 @@ function (W::Aberration)(ρ, θ, H = 1)
     w = w1 + w2 + w3 + w4 + w5 + w6 + w7
     return w
 end
+
+function (ε_y::RayError{Tangential})(y, H = 1)
+    (; W040, W131, W222, W220, W311, W020, W111) = ε_y.W
+    (; nu) = ε_y
+    ε1 = 4 * W040 * y ^ 3
+    ε2 = 3 * W131 * H * y ^ 2
+    ε3 = 2 * W222 * H ^ 2 * y
+    ε4 = 2 * W220 * H ^ 2 * y
+    ε5 = W311 * H ^ 3
+    ε6 = 2 * W020 * y
+    ε7 = W111 * H
+    ε = ε1 + ε2 + ε3 + ε4 + ε5 + ε6 + ε7
+    return ε / nu
+end
+
+function (ε_x::RayError{Sagittal})(x, H = 1)
+    (; W040, W131, W222, W220, W311, W020, W111) = ε_x.W
+    (; nu) = ε_x
+    ε1 = 4 * W040 * x ^ 3
+    ε4 = 2 * W220 * H ^ 2 * x
+    ε6 = 2 * W020 * x
+    ε = ε1 + ε4 + ε6
+    return ε / nu
+end
+
+function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: OrthogonalRay
+    RayError{T}(W, s.marginal.nu[end])
+end
