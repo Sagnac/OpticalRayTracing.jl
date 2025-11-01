@@ -30,11 +30,19 @@ end # module MakeDocs
 
 MakeDocs.setup("docs/setup.txt")
 
+DocMeta.setdocmeta!(
+    OpticalRayTracing,
+    :DocTestSetup,
+    :(using OpticalRayTracing);
+    recursive = true
+)
+
 makedocs(
     sitename = "OpticalRayTracing.jl",
     pages = [
         MakeDocs.pages;
         "Plotting Examples.md";
+        "API" => "API.md"
     ],
     modules = [OpticalRayTracing],
     format = Documenter.HTML(warn_outdated = false)

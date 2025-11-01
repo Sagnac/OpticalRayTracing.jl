@@ -13,6 +13,7 @@ include("Vignetting.jl")
 include("SeidelAberrations.jl")
 include("BaseMethods.jl")
 include("RayPlot.jl")
+include("API.jl")
 
 function scale!(M::Lens)
     M[:,2] .*= 1E-3

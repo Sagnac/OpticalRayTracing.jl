@@ -1,6 +1,6 @@
 # OpticalRayTracing.jl
 
-First order paraxial ray tracing, optical system solving, and aberration analysis.
+First order paraxial ray tracing, optical system solving, and third order aberration analysis.
 
 ----
 
