@@ -228,7 +228,7 @@ end
 @testset "vignetting" begin
     partial = @suppress _vignetting(system, a)[4]
     @test partial == [1, 2, 3, 6, 7]
-    FOVs = vignetting(system, a, FOV)[2]
+    slopes, FOVs = vignetting(system, a, FOV)
     systems = [solve(surfaces, a, h′) for h′ in FOVs]
     vignetting_matrices = @suppress [vignetting(system, a) for system in systems]
     a_ = (a for (i, a) in enumerate(a) if i != system.stop)
@@ -236,4 +236,10 @@ end
         M = vignetting_matrices[i]
         @test any(a_ .≈ view(M, [1:system.stop-1; system.stop+1:length(a)], i+2))
     end
+    ū = slopes[2]
+    y = -ū * EP.t
+    rt_half = raytrace(system.lens, y, ū, a; clip = true).ynu
+    rt_clip = raytrace(system.lens, y - 1e-12, ū, a; clip = true).ynu
+    @test !any(isnan, rt_half)
+    @test any(isnan, rt_clip)
 end

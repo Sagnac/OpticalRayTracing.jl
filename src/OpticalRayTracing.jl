@@ -83,7 +83,7 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     rt[1,:] .= y, ω
     for i = axes(M, 1)
         y, ω = transfer(y, ω, τ[i], ϕ[i])
-        if clip && y > a[i]
+        if clip && abs(y) - a[i] > 1e-13
             rt[i+1:end,:] .= NaN
             break
         end
