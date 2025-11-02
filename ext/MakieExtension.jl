@@ -1,10 +1,11 @@
 module MakieExtension
 
-using OpticalRayTracing, Makie
+using OpticalRayTracing, Makie, Printf
 
-using OpticalRayTracing: System
+using OpticalRayTracing: System, SystemOrRayBasis
 
-import OpticalRayTracing: rayplot, rayplot!
+import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
+                          field_curves, percent_distortion
 
 import Makie: plot!
 
@@ -19,6 +20,124 @@ end
 @recipe RayTracePlot begin
     ray_colors = (:blue, :green)
     surface_color = :black
+end
+
+const k = 1000
+
+function wavefan(W::Aberration; k = k, kwargs...)
+    fig = Figure()
+    tangential_axis = Axis(fig[1,1];
+        title = "Wave Aberration\nTangential",
+        xlabel = L"y_p",
+        ylabel = L"OPD"
+    )
+    sagittal_axis = Axis(fig[1,2];
+        title = "Wave Aberration\nSagittal",
+        xlabel = L"x_p",
+        ylabel = L"OPD"
+    )
+    ρ = x = H = range(0.0, 1.0, k)
+    grid = GridLayout(fig[1,3])
+    grid[2,1] = slider = Slider(fig;
+        horizontal = false,
+        range = H,
+        startvalue = 1.0,
+        snap = false,
+    )
+    H = slider.value
+    on(H) do _
+        reset_limits!(tangential_axis)
+        reset_limits!(sagittal_axis)
+    end
+    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    y = range(-1.0, 1.0, k)
+    Wy = @lift W.(ρ, 0.0, $H)
+    Wx = @lift W.(ρ, π/2, $H)
+    lines!(tangential_axis, y, Wy; color = :black, kwargs...)
+    lines!(sagittal_axis, x, Wx; color = :black, kwargs...)
+    DataInspector(fig)
+    return fig
+end
+
+function rayfan(W::Aberration, s::SystemOrRayBasis, ; k = k, kwargs...)
+    fig = Figure()
+    tangential_axis = Axis(fig[1,1];
+        title = "Transverse Ray Error\nTangential",
+        xlabel = L"y_p",
+        ylabel = L"\varepsilon_Y"
+    )
+    sagittal_axis = Axis(fig[1,2];
+        title = "Transverse Ray Error\nSagittal",
+        xlabel = L"x_p",
+        ylabel = L"\varepsilon_X"
+    )
+    ρ = x = H = range(0.0, 1.0, k)
+    grid = GridLayout(fig[1,3])
+    grid[2,1] = slider = Slider(fig;
+        horizontal = false,
+        range = H,
+        startvalue = 1.0,
+        snap = false,
+    )
+    H = slider.value
+    on(H) do _
+        reset_limits!(tangential_axis)
+        reset_limits!(sagittal_axis)
+    end
+    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    y = range(-1.0, 1.0, k)
+    ε_y = RayError{Tangential}(W, s)
+    ε_x = RayError{Sagittal}(W, s)
+    εy = @lift ε_y.(y, $H)
+    εx = @lift ε_x.(x, $H)
+    lines!(tangential_axis, y, εy; color = :black, kwargs...)
+    lines!(sagittal_axis, x, εx; color = :black, kwargs...)
+    DataInspector(fig)
+    return fig
+end
+
+function field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    (; W220P, W220, W220T, W222, λ) = W
+    nu = s.marginal.nu[end]
+    u = s.marginal.u[end]
+    α = -inv(nu * u) * λ
+    fig = Figure()
+    axis = Axis(fig[1,1];
+        title = "Longitudinal Astigmatic Field Curves",
+        xlabel = "z",
+        ylabel = "H"
+    )
+    max_W220P = α * W220P
+    max_W220T = α * W220T
+    z = range(min(max_W220P, max_W220T), max(max_W220P, max_W220T), k)
+    H = range(0.0, 1.0, k)
+    P = max_W220P .* H .^ 2
+    T = max_W220T .* H .^ 2
+    S = α * W220 .* H .^ 2
+    lines!(axis, P, H; label = "P", kwargs...)
+    lines!(axis, T, H; label = "T", kwargs...)
+    lines!(axis, S, H; label = "S", kwargs...)
+    axislegend(axis)
+    DataInspector(fig)
+    return fig
+end
+
+function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    (; W311, λ) = W
+    ȳ = s.chief.y[end]
+    n′u′ = s.marginal.nu[end]
+    fig = Figure()
+    axis = Axis(fig[1,1];
+        title = "Percent Distortion",
+        xlabel = "%",
+        ylabel = "H"
+    )
+    p = range(0.0, 100.0, k)
+    H = range(0.0, 1.0, k)
+    pd = @. W311 * λ / n′u′ * H ^ 3 / ȳ * 100.0
+    lines!(axis, pd, H; kwargs...)
+    DataInspector(fig)
+    return fig
 end
 
 _rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)

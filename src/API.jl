@@ -60,6 +60,19 @@ See also: [`Lens`](@ref).
 compute_surfaces
 
 """
+    field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+
+Plot the third order longitudinal astigmatic field curves. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
+
+`H` on the plot refers to the normalized field parameter.
+
+`P`, `T`, & `S` on the plot refer to the Petzval field, the Tangential field, and the Sagittal field.
+
+See also: [`percent_distortion`](@ref), [`rayfan`](@ref), [`wavefan`](@ref).
+"""
+field_curves
+
+"""
     flatten(M::TransferMatrix)
 
 Return the cardinal points for the input vertex matrix.
@@ -72,6 +85,28 @@ flatten
 Compute the paraxial incidence angles over the system. Returns a four column matrix with the first two columns referring to the optical angles `ni` & `nī` for the marginal & chief ray, respectively, and the last two columns referring to the physical angles `i`, `ī`.
 """
 incidences
+
+"""
+    percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+
+Plot the percent distortion for the given system of aberrations. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
+
+`H` on the plot refers to the normalized field parameter.
+
+See also: [`field_curves`](@ref), [`rayfan`](@ref), [`wavefan`](@ref).
+"""
+percent_distortion
+
+"""
+    rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+
+Plot the third order ray intercept curves for the given system of aberrations. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
+
+`H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
+
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`wavefan`](@ref).
+"""
+rayfan
 
 """
     rayplot(system)
@@ -192,3 +227,14 @@ Determines the maximum FOVs corresponding to those sizes as well as returning a 
 Return a two-tuple of three-element vectors corresponding to the maximum fields for the unvignetted, half-vignetted, and fully vignetted cases with the first element of the tuple corresponding to the paraxial chief ray slopes and the second corresponding to the image heights.
 """
 vignetting
+
+"""
+    wavefan(W::Aberration; k = k, kwargs...)
+
+Plot the input aberrations as a a composite wavefront error over the pupil in the tangential and sagittal directions. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
+
+`H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
+
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref).
+"""
+wavefan

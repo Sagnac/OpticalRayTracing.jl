@@ -35,3 +35,7 @@ end
 # requires Makie
 function rayplot end
 function rayplot! end
+function wavefan end
+function rayfan end
+function field_curves end
+function percent_distortion end
