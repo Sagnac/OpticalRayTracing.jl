@@ -16,7 +16,7 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
     u = marginal.u
     j = eachindex(R)
     A = [nu[i] + n[i] * y[i] / R[i] for i ∈ j]
-    Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j]
+    Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j] .|> abs
     yΔ = [y[i] * Δ(u, n, i) for i ∈ j]
     yδ = [y[i] * Δ(δn, n, i) for i ∈ j]
     P = [(inv(n[i+1]) - inv(n[i])) / R[i] for i ∈ j]
