@@ -1,6 +1,8 @@
 # Plotting Examples
 
-This package defines several plot recipes for [Makie](https://github.com/MakieOrg/Makie.jl).
+Plotting is supported with the installation of any [Makie](https://github.com/MakieOrg/Makie.jl) backend.
+
+## Ray Trace Plots
 
 Supported keyword arguments are:
 * `theme` (using Makie's theme customizability);
@@ -27,3 +29,21 @@ rayplot!(rays)
 
 ![rayplot](assets/images/rayplot.png)
 ![rays](assets/images/rays.png)
+
+## Aberration Plots
+
+The fan plots are interactive and include a slider which allows dynamic adjustment of the field.
+
+```julia
+using GLMakie
+
+wavefan(W)
+rayfan(W, system)
+field_curves(W, system)
+percent_distortion(W, system)
+```
+
+![wavefan](assets/images/wavefan.png)
+![rayfan](assets/images/rayfan.png)
+![field_curves](assets/images/field_curves.png)
+![percent_distortion](assets/images/percent_distortion.png)
