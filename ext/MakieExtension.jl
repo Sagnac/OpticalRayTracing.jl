@@ -2,7 +2,7 @@ module MakieExtension
 
 using OpticalRayTracing, Makie, Printf
 
-using OpticalRayTracing: System, SystemOrRayBasis
+using OpticalRayTracing: System, SystemOrRayBasis, Aberration
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion
