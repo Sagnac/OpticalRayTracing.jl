@@ -7,8 +7,8 @@ The computed result wraps a two column lens matrix where the first column refers
 
 ```jldoctest
 julia> Lens([
-           Inf 0.0 1.0; # object space
-           50.0 3.0 1.5;
+           Inf 0.0 1.0 # object space
+           50.0 3.0 1.5
            -50.0 0.0 1.0
        ])
 2×2 Lens:

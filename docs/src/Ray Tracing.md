@@ -12,7 +12,7 @@ Lenses can be computed either by passing a surface matrix, as in `Lens(surfaces)
 # telephoto objective comprised of two thin lenses in air
 lens = Lens([
     # t/n   # power
-    0.0      0.02;
+    0.0      0.02
     25.0    -0.02
 ], ones(3))
 

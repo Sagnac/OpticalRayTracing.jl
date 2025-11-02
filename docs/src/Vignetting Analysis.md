@@ -24,5 +24,6 @@ vignetting(system, a)
 ```
 
 ```@repl vignetting
-vignetting(system, a, FOV)
+slopes, heights = vignetting(system, a, FOV);
+heights
 ```
