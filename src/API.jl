@@ -189,7 +189,7 @@ Fields are:
 * `XP`: exit pupil containing fields: `D`: diameter, `t`: distance from the back vertex;
 * `marginal`: marginal ray;
 * `chief`: chief ray;
-* `trace`: the full `ynu` ray trace for the marginal & chief rays;
+* `trace`: the full `yu` ray trace for the marginal & chief rays;
 * `H`: Lagrange invariant;
 * `P1`: front principal plane location w.r.t the front vertex;
 * `P2`: back principal plane location w.r.t the back vertex;
