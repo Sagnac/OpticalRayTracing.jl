@@ -48,7 +48,7 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
     W111 = sum(lateral)
     Aberration(W040, W131, W222, W220, W311, W020, W111, W220P, W220M, W220T,
                spherical, coma, astigmatism, sagittal, distortion, axial, lateral,
-               petzval, medial, tangential)
+               petzval, medial, tangential, λ)
 end
 
 function (W::Aberration)(ρ, θ, H = 1)
@@ -65,7 +65,7 @@ function (W::Aberration)(ρ, θ, H = 1)
 end
 
 function (ε_y::RayError{Tangential})(y, H = 1)
-    (; W040, W131, W222, W220, W311, W020, W111) = ε_y.W
+    (; W040, W131, W222, W220, W311, W020, W111, λ) = ε_y.W
     (; nu) = ε_y
     ε1 = 4 * W040 * y ^ 3
     ε2 = 3 * W131 * H * y ^ 2
@@ -75,17 +75,17 @@ function (ε_y::RayError{Tangential})(y, H = 1)
     ε6 = 2 * W020 * y
     ε7 = W111 * H
     ε = ε1 + ε2 + ε3 + ε4 + ε5 + ε6 + ε7
-    return ε / nu
+    return ε * λ / nu
 end
 
 function (ε_x::RayError{Sagittal})(x, H = 1)
-    (; W040, W131, W222, W220, W311, W020, W111) = ε_x.W
+    (; W040, W131, W222, W220, W311, W020, W111, λ) = ε_x.W
     (; nu) = ε_x
     ε1 = 4 * W040 * x ^ 3
     ε4 = 2 * W220 * H ^ 2 * x
     ε6 = 2 * W020 * x
     ε = ε1 + ε4 + ε6
-    return ε / nu
+    return ε * λ / nu
 end
 
 function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: OrthogonalRay

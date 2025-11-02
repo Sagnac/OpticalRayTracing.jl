@@ -88,6 +88,7 @@ struct Aberration
     petzval::Vector{Float64}
     medial::Vector{Float64}
     tangential::Vector{Float64}
+    λ::Float64
 end
 
 const OrthogonalRay = Union{Tangential, Sagittal}
