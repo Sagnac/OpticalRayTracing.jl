@@ -4,6 +4,8 @@ struct Tangential <: ParaxialRay end
 
 struct Sagittal <: ParaxialRay end
 
+struct Skew <: ParaxialRay end
+
 struct Marginal <: ParaxialRay end
 
 struct Chief <: ParaxialRay end
@@ -92,9 +94,7 @@ struct Aberration
     λ::Float64
 end
 
-const OrthogonalRay = Union{Tangential, Sagittal}
-
-struct RayError{T <: OrthogonalRay}
+struct RayError{T <: ParaxialRay}
     W::Aberration
     nu::Float64
 end

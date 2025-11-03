@@ -64,30 +64,34 @@ function (W::Aberration)(ρ, θ, H = 1)
     return w
 end
 
-function (ε_y::RayError{Tangential})(y, H = 1)
-    (; W040, W131, W222, W220, W311, W020, W111, λ) = ε_y.W
-    (; nu) = ε_y
-    ε1 = 4 * W040 * y ^ 3
-    ε2 = 3 * W131 * H * y ^ 2
-    ε3 = 2 * W222 * H ^ 2 * y
-    ε4 = 2 * W220 * H ^ 2 * y
-    ε5 = W311 * H ^ 3
-    ε6 = 2 * W020 * y
-    ε7 = W111 * H
-    ε = ε1 + ε2 + ε3 + ε4 + ε5 + ε6 + ε7
-    return ε * λ / nu
+function ray_error(ε, x, y, H = 1)
+    (; W040, W131, W222, W220, W311, W020, W111, λ) = ε.W
+    (; nu) = ε
+    ε1_y = 4 * W040 * (x ^ 2 * y + y ^ 3)
+    ε1_x = 4 * W040 * (y ^ 2 * x + x ^ 3)
+    ε2_y = W131 * H * (x ^ 2 + 3 * y ^ 2)
+    ε2_x = W131 * H * (2 * x * y)
+    ε3_y = 2 * W222 * H ^ 2 * y
+    ε3_x = 0
+    ε4_y = 2 * W220 * H ^ 2 * y
+    ε4_x = 2 * W220 * H ^ 2 * x
+    ε5_y = W311 * H ^ 3
+    ε5_x = 0
+    ε6_y = 2 * W020 * y
+    ε6_x = 2 * W020 * x
+    ε7_y = W111 * H
+    ε7_x = 0
+    ε_y = (ε1_y + ε2_y + ε3_y + ε4_y + ε5_y + ε6_y + ε7_y) * λ / nu
+    ε_x = (ε1_x + ε2_x + ε3_x + ε4_x + ε5_x + ε6_x + ε7_x) * λ / nu
+    return ε_y, ε_x
 end
 
-function (ε_x::RayError{Sagittal})(x, H = 1)
-    (; W040, W131, W222, W220, W311, W020, W111, λ) = ε_x.W
-    (; nu) = ε_x
-    ε1 = 4 * W040 * x ^ 3
-    ε4 = 2 * W220 * H ^ 2 * x
-    ε6 = 2 * W020 * x
-    ε = ε1 + ε4 + ε6
-    return ε * λ / nu
-end
+(ε_y::RayError{Tangential})(y, H = 1) = ray_error(ε_y, 0, y, H)[1]
 
-function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: OrthogonalRay
+(ε_x::RayError{Sagittal})(x, H = 1) = ray_error(ε_x, x, 0, H)[2]
+
+(ε::RayError{Skew})(x, y, H = 1) = ray_error(ε, x, y, H)
+
+function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: ParaxialRay
     RayError{T}(W, s.marginal.nu[end])
 end
