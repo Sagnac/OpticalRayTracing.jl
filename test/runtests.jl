@@ -149,11 +149,17 @@ end
 
 # The third order aberration data in the book are Seidel S_I-S_V coefficients in the
 # form of transverse ray errors in units of mm. Transverse ray aberrations are
-# proportional to the negative partial derivative of the wavefront error times
-# the scaling constant -1/n′ū′ ≈ 2 * f_number, however this book defines the
-# coefficients using -1/2n′ū′ instead, except for the chromatic contributions which
-# use -1/n′ū′ so the data is scaled appropriately to compare the WIJK coefficients
-# in terms of waves.
+# proportional to the negative partial derivative of the wavefront error with respect
+# to the normalized pupil coordinate times the ratio of the radius of the reference
+# sphere to the radius of the exit pupil which is equal to -1/n′u′; however this book
+# defines the wave coefficients using a different sign convention and -1/2n′u′ for
+# the scaling constant instead, except for the first order chromatic contributions
+# which use -1/n′u′; this is because their coefficients correspond to a transverse
+# ray error expansion (B_1-B_5 in the book) which absorb all of the derivative and
+# scaling prefactors so the data must be scaled appropriately to compare the WIJK
+# coefficients in terms of waves.
+
+const α = 2u[end] / λ
 
 # Their results appear to be calculated in 32-bit floating point precision.
 
@@ -187,8 +193,6 @@ const W111 = 0.027401
 
 # Absolute tolerance of a quarter wave which is close to the data minimum
 const aberr_scale = 0.25
-
-const α = -inv(λ * N)
 
 const aberr = aberrations(surfaces, system, λ, δn)
 
