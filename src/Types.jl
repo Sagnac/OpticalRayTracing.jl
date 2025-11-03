@@ -65,6 +65,7 @@ struct System
     PN::Float64
     M::TransferMatrix
     lens::Lens
+    a::Vector{Float64}
 end
 
 struct Aberration
@@ -97,8 +98,6 @@ struct RayError{T <: OrthogonalRay}
     W::Aberration
     nu::Float64
 end
-
-struct FOV end
 
 const SystemOrRayBasis = Union{System, RayBasis}
 

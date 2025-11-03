@@ -9,7 +9,7 @@ Given a system or ray bundle and a set of apertures this package provides a basi
 
 In addition, the maximum system field of view for the unvignetted, half-vignetted, and fully-vignetted cases is determined for the input aperture sizes.
 
-By passing the exported `FOV` type the second method allows directly extracting the maximum supported paraxial principal ray slopes and the corresponding image heights for all three vignetting conditions.
+By explicitly passing the set of aperture sizes, the second method allows directly extracting the maximum supported paraxial principal ray slopes and the corresponding image heights for all three vignetting conditions.
 
 In essence, the matrix represents the supported aperture sizes for each case given the system field of view and the returned vectors from the second method correspond to the maximal fields for the given aperture sizes.
 
@@ -20,10 +20,12 @@ Any `NaN`s in the matrix signify that there is no possible size which fits the c
 ```
 
 ```@repl vignetting
-vignetting(system, a)
+vignetting(system)
 ```
 
 ```@repl vignetting
-slopes, heights = vignetting(system, a, FOV);
+slopes, heights = vignetting(system, a);
 heights
 ```
+
+There is support for analyzing a traced `RayBasis` instead using the `vignetting(rays::RayBasis, system::System)` and `vignetting(rays::RayBasis, a::AbstractVector, system::System)` methods.

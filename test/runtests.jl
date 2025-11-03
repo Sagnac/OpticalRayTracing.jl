@@ -228,11 +228,11 @@ end
 end
 
 @testset "vignetting" begin
-    partial = @suppress _vignetting(system, a)[4]
+    partial = @suppress _vignetting(system, a, system.stop)[4]
     @test partial == [1, 2, 3, 6, 7]
-    slopes, FOVs = vignetting(system, a, FOV)
+    slopes, FOVs = vignetting(system, a)
     systems = [solve(surfaces, a, h′) for h′ in FOVs]
-    vignetting_matrices = @suppress [vignetting(system, a) for system in systems]
+    vignetting_matrices = @suppress [vignetting(system) for system in systems]
     a_ = (a for (i, a) in enumerate(a) if i != system.stop)
     for i = 1:3
         M = vignetting_matrices[i]

@@ -1,5 +1,5 @@
-function _vignetting(system::SystemOrRayBasis, a::AbstractVector)
-    (; marginal, chief, stop) = system
+function _vignetting(system::SystemOrRayBasis, a::AbstractVector, stop::Int)
+    (; marginal, chief) = system
     ȳ = abs.(surface_ray(chief.y))
     y = abs.(surface_ray(marginal.y))
     vig = Matrix{Float64}(undef, length(a), 5)
@@ -50,12 +50,24 @@ function _vignetting(system::SystemOrRayBasis, a::AbstractVector)
     return vig, FOVs, limit, partial, full
 end
 
-vignetting(system::SystemOrRayBasis, a::AbstractVector) = _vignetting(system, a)[1]
+vignetting(system::System) = _vignetting(system, system.a, system.stop)[1]
 
-function vignetting(system::SystemOrRayBasis, a::AbstractVector, ::Type{FOV})
+function vignetting(rays::RayBasis, system::System)
+    _vignetting(rays, system.a, system.stop)[1]
+end
+
+function _vignetting(system::SystemOrRayBasis, a::AbstractVector, stop, ::Type{Lens})
     r = redirect_stdout(devnull) do
-        _vignetting(system, a)[2]
+        _vignetting(system, a, stop)[2]
     end
     ū, h′ = eachrow(reinterpret(reshape, Float64, r))
     (tand.(0.5 * ū), copy(h′))
+end
+
+function vignetting(system::System, a::AbstractVector)
+    _vignetting(system, a, system.stop, Lens)
+end
+
+function vignetting(rays::RayBasis, a::AbstractVector, system::System)
+    _vignetting(rays, a, system.stop, Lens)
 end

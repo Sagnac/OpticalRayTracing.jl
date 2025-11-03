@@ -2,7 +2,7 @@ module MakieExtension
 
 using OpticalRayTracing, Makie, Printf
 
-using OpticalRayTracing: System, SystemOrRayBasis, Aberration
+using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion
@@ -173,19 +173,35 @@ end
 function _rayplot(
     surfaces::Matrix{Float64},
     a::AbstractVector,
-    x...;
+    rays::RayBasis;
     kwargs...
 )
-    raytraceplot(surfaces, a, raypoints(x...)...; kwargs...)
+    raytraceplot(surfaces, a, raypoints(rays)...; kwargs...)
 end
 
 function _rayplot!(
     surfaces::Matrix{Float64},
     a::AbstractVector,
-    x...;
+    rays::RayBasis;
     kwargs...
 )
-    raytraceplot!(surfaces, a, raypoints(x...)...; kwargs...)
+    raytraceplot!(surfaces, a, raypoints(rays)...; kwargs...)
+end
+
+function _rayplot(
+    surfaces::Matrix{Float64},
+    system::System;
+    kwargs...
+)
+    raytraceplot(surfaces, system.a, raypoints(system)...; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    system::System;
+    kwargs...
+)
+    raytraceplot!(surfaces, system.a, raypoints(system)...; kwargs...)
 end
 
 function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}

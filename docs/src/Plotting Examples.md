@@ -19,7 +19,7 @@ theme = theme_black()
 surface_color = :white
 ray_colors = (:cyan, :red)
 
-rayplot(surfaces, a, system; theme, surface_color, ray_colors)
+rayplot(surfaces, system; theme, surface_color, ray_colors)
 
 rays = raytrace(system, -24.0, -1.5 * system.f)
 fig = rayplot(rays)
