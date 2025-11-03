@@ -26,10 +26,10 @@ reduced_thickness(lens::Lens) = lens[:,1]
 function compute_surfaces(lens::Lens)
     (; M, n) = lens
     τ, ϕ = eachcol(M)
-    len = length(ϕ)
-    surfaces = Matrix{Float64}(undef, len + 1, 3)
+    k = length(ϕ)
+    surfaces = Matrix{Float64}(undef, k + 1, 3)
     surfaces[1,:] = [Inf 0.0 n[1]]
-    for i in 2:len
+    for i in 2:k
         nᵢ = n[i]
         ϕᵢ = ϕ[i-1]
         R = iszero(ϕᵢ) ? Inf : (nᵢ - n[i-1]) / ϕᵢ
