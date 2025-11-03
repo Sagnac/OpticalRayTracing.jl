@@ -5,7 +5,7 @@ using OpticalRayTracing, Makie, Printf
 using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
-                          field_curves, percent_distortion
+                          field_curves, percent_distortion, spot_size
 
 import Makie: plot!
 
@@ -22,7 +22,7 @@ end
     surface_color = :black
 end
 
-const k = 1000
+const k = 1024
 
 function wavefan(W::Aberration; k = k, kwargs...)
     fig = Figure()
@@ -71,7 +71,7 @@ function rayfan(W::Aberration, s::SystemOrRayBasis, ; k = k, kwargs...)
         xlabel = L"x_p",
         ylabel = L"\varepsilon_X"
     )
-    ρ = x = H = range(0.0, 1.0, k)
+    x = H = range(0.0, 1.0, k)
     grid = GridLayout(fig[1,3])
     grid[2,1] = slider = Slider(fig;
         horizontal = false,
@@ -136,6 +136,50 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
     H = range(0.0, 1.0, k)
     pd = @. W311 * λ / n′u′ * H ^ 3 / ȳ * 100.0
     lines!(axis, pd, H; kwargs...)
+    DataInspector(fig)
+    return fig
+end
+
+function spot_size(W::Aberration, s::SystemOrRayBasis;
+                   k = round(Int, √k) + 1, kwargs...)
+    fig = Figure()
+    axis = Axis(fig[1,1];
+        xlabel = L"\varepsilon_X",
+        ylabel = L"\varepsilon_Y"
+    )
+    H = range(0.0, 1.0, k)
+    grid = GridLayout(fig[1,3])
+    grid[2,1] = slider = Slider(fig;
+        horizontal = false,
+        range = H,
+        startvalue = 1.0,
+        snap = false,
+    )
+    H = slider.value
+    on(_ -> reset_limits!(axis), H)
+    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    x = y = range(-1.0, 1.0, k)
+    lattice = Matrix{NTuple{2, Float64}}(undef, k, k)
+    for i = 1:k, j = 1:k
+        xi = x[i]
+        yj = y[j]
+        lattice[i,j] = hypot(xi, yj) <= 1.0 ? (xi, yj) : (NaN, NaN)
+    end
+    ε = RayError{Skew}(W, s)
+    ε_x = RayError{Sagittal}(W, s)
+    ε_y = RayError{Tangential}(W, s)
+    ε_x_i = @lift ε_x.(x, $H)
+    ε_y_i = @lift ε_y.(y, $H)
+    εx_εy = @lift vec(ε.(lattice, $H))
+    mean_ε_x = @lift sum($ε_x_i) / k
+    mean_ε_y = @lift sum($ε_y_i) / k
+    var_x = @lift sum(($ε_x_i .- $mean_ε_x) .^ 2) / k
+    var_y = @lift sum(($ε_y_i .- $mean_ε_y) .^ 2) / k
+    RMS = @lift sqrt($var_x + $var_y)
+    on(RMS; update = true) do RMS
+        axis.title[] = "RMS Spot Size: " * @sprintf("%.5f", RMS)
+    end
+    scatter!(axis, εx_εy; kwargs...)
     DataInspector(fig)
     return fig
 end

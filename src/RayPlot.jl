@@ -39,3 +39,4 @@ function wavefan end
 function rayfan end
 function field_curves end
 function percent_distortion end
+function spot_size end
