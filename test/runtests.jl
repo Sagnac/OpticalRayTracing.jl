@@ -1,6 +1,6 @@
 using Test, Suppressor
 using OpticalRayTracing
-using OpticalRayTracing: λ, _vignetting, surface_ray
+using OpticalRayTracing: λ, _vignetting, surface_ray, _raytrace
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
@@ -248,4 +248,17 @@ end
     rt_clip = raytrace(system.lens, y - 1e-12, ū, a; clip = true).ynu
     @test !any(isnan, rt_half)
     @test any(isnan, rt_clip)
+end
+
+@testset "full raytrace" begin
+    yu_par = raytrace(surfaces, 1.0, 0.0).yu
+    yu_real = _raytrace(surfaces, 1.0, 0.0, Real)
+    R, t = eachcol(surfaces)
+    k = length(R) - 1
+    ϵ_θ = inv(minimum(abs.(R))) ^ 3 / 6 * k * (k + 1) / 2
+    ϵ_y = ϵ_θ * maximum(t)
+    δ_θ = sum(@views(abs.(yu_par[2:end,2] .- yu_real[2:end,2])))
+    δ_y = sum(@views(abs.(yu_par[2:end,1] .- yu_real[2:end,1])))
+    @test δ_θ < ϵ_θ
+    @test δ_y < ϵ_y
 end

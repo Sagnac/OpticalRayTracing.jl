@@ -81,7 +81,7 @@ end
 function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
     τ, ϕ = eachcol(M)
-    rt = similar(M, size(M, 1) + 1, size(M, 2))
+    rt = similar(M, size(M, 1) + 1, 2)
     rt[1,:] .= y, ω
     for i = axes(M, 1)
         y, ω = transfer(y, ω, τ[i], ϕ[i])
@@ -93,6 +93,20 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
         rt[i+1,2] = ω
     end
     return Ray{Tangential}(rt, τ, n)
+end
+
+function _raytrace(surfaces::Matrix{Float64}, y, U, ::Type{Real})
+    R, t, n = eachcol(surfaces)
+    rt = similar(surfaces, size(surfaces, 1), 2)
+    rt[1,:] .= y, U
+    for i = 1:size(surfaces, 1)-1
+        y = y + tan(U) * t[i]
+        θ = asin(y / R[i+1])
+        U = asin(n[i] * sin(U + θ) / n[i+1]) - θ
+        rt[i+1,1] = y
+        rt[i+1,2] = U
+    end
+    return rt
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
