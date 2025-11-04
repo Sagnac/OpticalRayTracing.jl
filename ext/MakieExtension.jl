@@ -148,7 +148,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
         ylabel = L"\varepsilon_Y"
     )
     H = range(0.0, 1.0, k)
-    grid = GridLayout(fig[1,3])
+    grid = GridLayout(fig[1,2])
     grid[2,1] = slider = Slider(fig;
         horizontal = false,
         range = H,
@@ -159,18 +159,13 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     on(_ -> reset_limits!(axis), H)
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
     x = y = range(-1.0, 1.0, k)
-    lattice = Matrix{NTuple{2, Float64}}(undef, k, k)
-    for i = 1:k, j = 1:k
-        xi = x[i]
-        yj = y[j]
-        lattice[i,j] = hypot(xi, yj) <= 1.0 ? (xi, yj) : (NaN, NaN)
-    end
+    lattice = [(xᵢ, yᵢ) for xᵢ ∈ x for yᵢ ∈ y if hypot(xᵢ, yᵢ) ≤ 1.0]
     ε = RayError{Skew}(W, s)
     ε_x = RayError{Sagittal}(W, s)
     ε_y = RayError{Tangential}(W, s)
     ε_x_i = @lift ε_x.(x, $H)
     ε_y_i = @lift ε_y.(y, $H)
-    εx_εy = @lift vec(ε.(lattice, $H))
+    εx_εy = @lift ε.(lattice, $H)
     mean_ε_x = @lift sum($ε_x_i) / k
     mean_ε_y = @lift sum($ε_y_i) / k
     var_x = @lift sum(($ε_x_i .- $mean_ε_x) .^ 2) / k
