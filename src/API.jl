@@ -70,7 +70,7 @@ Plot the third order longitudinal astigmatic field curves. Requires using a `Mak
 
 `P`, `T`, & `S` on the plot refer to the Petzval field, the Tangential field, and the Sagittal field.
 
-See also: [`percent_distortion`](@ref), [`rayfan`](@ref), [`wavefan`](@ref).
+See also: [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
 """
 field_curves
 
@@ -95,7 +95,7 @@ Plot the percent distortion for the given system of aberrations. Requires using 
 
 `H` on the plot refers to the normalized field parameter.
 
-See also: [`field_curves`](@ref), [`rayfan`](@ref), [`wavefan`](@ref).
+See also: [`field_curves`](@ref), [`rayfan`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
 """
 percent_distortion
 
@@ -106,7 +106,7 @@ Plot the third order ray intercept curves for the given system of aberrations. R
 
 `H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
 
-See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`wavefan`](@ref).
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
 """
 rayfan
 
@@ -202,6 +202,17 @@ See also: [`raytrace`](@ref), [`incidences`](@ref).
 solve
 
 """
+    spot_size(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+
+Plot the spot diagram over the image plane using third order aberration data. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
+
+`H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
+
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref).
+"""
+spot_size
+
+"""
     transfer(M::TransferMatrix, v::Vector, τ, τ′)
 
 Transfer an input `[y, nu]` vector, extending by object & image space distances `τ`, `τ′`.
@@ -237,6 +248,6 @@ Plot the input aberrations as a a composite wavefront error over the pupil in th
 
 `H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
 
-See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref).
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref).
 """
 wavefan

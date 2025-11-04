@@ -41,9 +41,11 @@ wavefan(W)
 rayfan(W, system)
 field_curves(W, system)
 percent_distortion(W, system)
+spot_size(W, system)
 ```
 
 ![wavefan](assets/images/wavefan.png)
 ![rayfan](assets/images/rayfan.png)
 ![field_curves](assets/images/field_curves.png)
 ![percent_distortion](assets/images/percent_distortion.png)
+![spot_size](assets/images/spot_size.png)
