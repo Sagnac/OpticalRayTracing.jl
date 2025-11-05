@@ -1,14 +1,16 @@
 abstract type Paraxial end
 
+abstract type Fundamental <: Paraxial end
+
 struct Tangential <: Paraxial end
 
 struct Sagittal <: Paraxial end
 
 struct Skew <: Paraxial end
 
-struct Marginal <: Paraxial end
+struct Marginal <: Fundamental end
 
-struct Chief <: Paraxial end
+struct Chief <: Fundamental end
 
 struct Ray{T <: Union{Paraxial, Real}}
     y::Vector{Float64}
@@ -24,7 +26,12 @@ struct Ray{T <: Union{Paraxial, Real}}
         u = map(/, nu, n)
         yu = [y u]
         t = map(*, τ, @view(n[1:end-2]))
-        z = [-y[2] / u[1]; cumsum([t; -y[end-1] / u[end-1]])]
+        if T <: Fundamental
+            t = [t; -y[end-1] / u[end-1]]
+        end
+        z = cumsum(t)
+        z0 = iszero(u[1]) ? -(extrema(z)...) * 0.1 : -y[2] / u[1]
+        z = [z0; z]
         new(y, n, u, yu, nu, ynu, z)
     end
 end
