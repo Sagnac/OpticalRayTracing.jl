@@ -2,7 +2,7 @@ module OpticalRayTracing
 
 using Printf
 
-export TransferMatrix, Lens, Ray, Marginal, Chief, ParaxialRay, Tangential, FOV,
+export TransferMatrix, Lens, Ray, Marginal, Chief, Paraxial, Tangential, FOV,
        transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
        scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations,
        compute_surfaces, incidences, RayError, Sagittal, Skew, wavefan, rayfan,
@@ -95,18 +95,32 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     return Ray{Tangential}(rt, τ, n)
 end
 
-function _raytrace(surfaces::Matrix{Float64}, y, U, ::Type{Real})
+function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{Real})
     R, t, n = eachcol(surfaces)
+    ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
     rt[1,:] .= y, U
+    s = 0.0
     for i = 1:size(surfaces, 1)-1
-        y = y + tan(U) * t[i]
-        θ = asin(y / R[i+1])
-        U = asin(n[i] * sin(U + θ) / n[i+1]) - θ
+        y = y + tan(U) * (t[i] - s)
+        Rs = R[i+1]
+        if isfinite(Rs)
+            center = Rs ^ 2 - y ^ 2
+            s = center ≥ 0.0 ? Rs - sign(Rs) * sqrt(center) : NaN # misses surface
+        else
+            s = 0.0
+        end
+        # transfer across the surface sagitta
+        ts[i] += s
+        y += s * tan(U)
+        θ = asin(y / Rs)
+        sin_i′ = n[i] * sin(U + θ) / n[i+1]
+        U = sin_i′ ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y
         rt[i+1,2] = U
     end
-    return rt
+    rt[:,2] .*= n
+    return Ray{Real}(rt, ts, n)
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))

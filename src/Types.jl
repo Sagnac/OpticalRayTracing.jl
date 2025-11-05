@@ -1,16 +1,16 @@
-abstract type ParaxialRay end
+abstract type Paraxial end
 
-struct Tangential <: ParaxialRay end
+struct Tangential <: Paraxial end
 
-struct Sagittal <: ParaxialRay end
+struct Sagittal <: Paraxial end
 
-struct Skew <: ParaxialRay end
+struct Skew <: Paraxial end
 
-struct Marginal <: ParaxialRay end
+struct Marginal <: Paraxial end
 
-struct Chief <: ParaxialRay end
+struct Chief <: Paraxial end
 
-struct Ray{T <: ParaxialRay}
+struct Ray{T <: Union{Paraxial, Real}}
     y::Vector{Float64}
     n::Vector{Float64}
     u::Vector{Float64}
@@ -18,7 +18,7 @@ struct Ray{T <: ParaxialRay}
     nu::Vector{Float64}
     ynu::Matrix{Float64}
     z::Vector{Float64}
-    function Ray{T}(ynu, τ, n) where T <: ParaxialRay
+    function Ray{T}(ynu, τ, n) where T <: Union{Paraxial, Real}
         y, nu = eachcol(ynu)
         n = [n; n[end]]
         u = map(/, nu, n)
@@ -94,7 +94,7 @@ struct Aberration
     λ::Float64
 end
 
-struct RayError{T <: ParaxialRay}
+struct RayError{T <: Paraxial}
     W::Aberration
     nu::Float64
 end
