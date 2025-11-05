@@ -28,7 +28,7 @@ const pages = [
 
 end # module MakeDocs
 
-MakeDocs.setup("docs/setup.txt")
+MakeDocs.setup("docs/setup.jl")
 
 DocMeta.setdocmeta!(
     OpticalRayTracing,
