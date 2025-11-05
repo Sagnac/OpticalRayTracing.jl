@@ -6,7 +6,7 @@ export TransferMatrix, Lens, Ray, Marginal, Chief, Paraxial, Tangential, FOV,
        transfer, reverse_transfer, raytrace, trace_marginal_ray, trace_chief_ray,
        scale!, solve, flatten, raypoints, rayplot, rayplot!, vignetting, aberrations,
        compute_surfaces, incidences, RayError, Sagittal, Skew, wavefan, rayfan,
-       field_curves, percent_distortion, spot_size
+       field_curves, percent_distortion, spot_size, RealRay
 
 include("Types.jl")
 include("TransferMatrix.jl")
@@ -95,7 +95,7 @@ function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
     return Ray{Tangential}(rt, τ, n)
 end
 
-function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{Real})
+function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
     R, t, n = eachcol(surfaces)
     ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
@@ -119,8 +119,7 @@ function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{Real})
         rt[i+1,1] = y
         rt[i+1,2] = U
     end
-    rt[:,2] .*= n
-    return Ray{Real}(rt, ts, n)
+    return RealRay(rt, ts, n)
 end
 
 function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))

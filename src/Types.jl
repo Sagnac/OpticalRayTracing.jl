@@ -12,7 +12,7 @@ struct Marginal <: Fundamental end
 
 struct Chief <: Fundamental end
 
-struct Ray{T <: Union{Paraxial, Real}}
+struct Ray{T <: Paraxial}
     y::Vector{Float64}
     n::Vector{Float64}
     u::Vector{Float64}
@@ -20,7 +20,7 @@ struct Ray{T <: Union{Paraxial, Real}}
     nu::Vector{Float64}
     ynu::Matrix{Float64}
     z::Vector{Float64}
-    function Ray{T}(ynu, τ, n) where T <: Union{Paraxial, Real}
+    function Ray{T}(ynu, τ, n) where T <: Paraxial
         y, nu = eachcol(ynu)
         n = [n; n[end]]
         u = map(/, nu, n)
@@ -34,6 +34,15 @@ struct Ray{T <: Union{Paraxial, Real}}
         z = [z0; z]
         new(y, n, u, yu, nu, ynu, z)
     end
+end
+
+struct RealRay
+    y::Vector{Float64}
+    u::Vector{Float64}
+    yu::Matrix{Float64}
+    n::Vector{Float64}
+    z::Vector{Float64}
+    RealRay(yu, t, n) = new(eachcol(yu)..., yu, n, cumsum(t))
 end
 
 struct RayBasis

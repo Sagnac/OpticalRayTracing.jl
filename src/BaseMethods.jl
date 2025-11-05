@@ -26,9 +26,9 @@ function show(io::IO, ::MIME"text/plain", system::T) where T <: System
     return
 end
 
-show(io::IO, ray::Ray) = summary(io, ray)
+show(io::IO, ray::Union{Ray, RealRay}) = summary(io, ray)
 
-function show(io::IO, m::MIME"text/plain", ray::Ray)
+function show(io::IO, m::MIME"text/plain", ray::Union{Ray, RealRay})
     show(io, ray)
     haskey(io, :typeinfo) && return
     println(io, ".yu:")
