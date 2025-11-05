@@ -1,6 +1,6 @@
 using Test, Suppressor
 using OpticalRayTracing
-using OpticalRayTracing: λ, _vignetting, surface_ray, _raytrace
+using OpticalRayTracing: λ, _vignetting, surface_ray
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
