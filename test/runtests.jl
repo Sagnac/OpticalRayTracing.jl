@@ -191,6 +191,9 @@ const W311 = 0.142422
 const W020 = -0.022389
 const W111 = 0.027401
 
+const SA5 = 0.125426
+const SA7 = 0.048670
+
 # Absolute tolerance of a quarter wave which is close to the data minimum
 const aberr_scale = 0.25
 
@@ -261,4 +264,28 @@ end
     δ_y = sum(@views(abs.(yu_par[2:end,1] .- yu_real[2:end,1])))
     @test δ_θ < ϵ_θ
     @test δ_y < ϵ_y
+end
+
+const ray_scale = 1e-3
+
+@testset "transverse ray errors" begin
+    ΔW = aberrations(surfaces, system)
+    ε_y = RayError{Tangential}(ΔW, system)
+    ε_x = RayError{Sagittal}(ΔW, system)
+    @test ε_y(1.0, 1.0) ≈ +(W040, 3W131, 3W222, W220P, W311) atol = ray_scale
+    @test ε_x(1.0, 1.0) ≈ +(W040, W222, W220P) atol = ray_scale
+    ε = RayError{Skew}(ΔW, system)
+    ρ = rand()
+    θ = 2π * rand()
+    H = rand()
+    x = ρ * sin(θ)
+    y = ρ * cos(θ)
+    εx, εy = ε(x, y, H)
+    @test εy ≈ W040 * ρ ^ 3 * cos(θ) +
+               W131 * ρ ^ 2 * H * (2 + cos(2θ)) +
+               (3W222 + W220P) * ρ * H ^ 2 * cos(θ) +
+               W311 * H ^3 atol = ray_scale
+    @test εx ≈ W040 * ρ ^ 3 * sin(θ) +
+               W131 * ρ ^ 2 * H * sin(2θ) +
+               (W222 + W220P) * ρ * H ^ 2 * sin(θ) atol = ray_scale
 end
