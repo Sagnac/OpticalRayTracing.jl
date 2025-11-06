@@ -255,7 +255,7 @@ end
 
 @testset "full raytrace" begin
     yu_par = raytrace(surfaces, 1.0, 0.0).yu
-    yu_real = raytrace(surfaces, 1.0, 0.0, Real).yu
+    yu_real = raytrace(surfaces, 1.0, 0.0, RealRay).yu
     R, t = eachcol(surfaces)
     k = length(R) - 1
     ϵ_θ = inv(minimum(abs.(R))) ^ 3 / 6 * k * (k + 1) / 2

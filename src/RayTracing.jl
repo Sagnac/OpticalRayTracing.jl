@@ -60,7 +60,8 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
-function raytrace(lens::Lens, y, ω, a = fill(Inf, size(lens, 1)); clip = false)
+function raytrace(lens::Lens, y, ω,
+                  a::AbstractVector = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
     τ, ϕ = eachcol(M)
     rt = similar(M, size(M, 1) + 1, 2)
@@ -104,8 +105,9 @@ function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
     return RealRay(rt, ts, n)
 end
 
-function raytrace(surfaces::Matrix, y, ω, a = fill(Inf, size(surfaces, 1)))
-    raytrace(Lens(surfaces), y, ω, a)
+function raytrace(surfaces::Matrix, y, ω,
+                  a::AbstractVector = fill(Inf, size(surfaces, 1)); clip = false)
+    raytrace(Lens(surfaces), y, ω, a; clip)
 end
 
 function raytrace(system::System, ȳ, s)
