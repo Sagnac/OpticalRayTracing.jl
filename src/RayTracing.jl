@@ -60,6 +60,19 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
+function sag(y, R)
+    if isfinite(R)
+        x = R ^ 2 - y ^ 2
+        if x ≥ 0.0
+            return R - sign(R) * sqrt(x)
+        else
+            return NaN # misses surface
+        end
+    else
+        return 0.0
+    end
+end
+
 function raytrace(lens::Lens, y, ω,
                   a::AbstractVector = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
@@ -85,17 +98,15 @@ function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
     rt[1,:] .= y, U
     s = 0.0
     for i = 1:size(surfaces, 1)-1
-        y = y + tan(U) * (t[i] - s)
+        y = y + tan(U) * ts[i]
         Rs = R[i+1]
-        if isfinite(Rs)
-            center = Rs ^ 2 - y ^ 2
-            s = center ≥ 0.0 ? Rs - sign(Rs) * sqrt(center) : NaN # misses surface
-        else
-            s = 0.0
-        end
-        # transfer across the surface sagitta
-        ts[i] += s
+        s = sag(y, Rs)
+        # transfer across surface sagitta
         y += s * tan(U)
+        # recompute sagitta at new height and update distances
+        s = sag(y, Rs)
+        ts[i] += s
+        ts[i+1] -= s
         θ = asin(y / Rs)
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
         U = sin_i′ ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
