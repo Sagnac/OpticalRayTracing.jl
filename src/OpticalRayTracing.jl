@@ -33,7 +33,8 @@ export TransferMatrix,
        field_curves,
        percent_distortion,
        spot_size,
-       RealRay
+       RealRay,
+       caustic
 
 include("Types.jl")
 include("RayTracing.jl")

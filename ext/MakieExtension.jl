@@ -5,15 +5,17 @@ using OpticalRayTracing, Makie, Printf
 using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
-                          field_curves, percent_distortion, spot_size
+                          field_curves, percent_distortion, spot_size, caustic
 
 import Makie: plot!
 
-function rayplot(x...; theme = Attributes(), kwargs...)
+const default_plot_theme = Attributes()
+
+function rayplot(x...; theme = default_plot_theme, kwargs...)
     with_theme(() -> _rayplot(x...; kwargs...), theme)
 end
 
-function rayplot!(x...; theme = Attributes(), kwargs...)
+function rayplot!(x...; theme = default_plot_theme, kwargs...)
     with_theme(() -> _rayplot!(x...; kwargs...), theme)
 end
 
@@ -23,6 +25,8 @@ end
 end
 
 const k = 1024
+
+const d = 0.05
 
 function wavefan(W::Aberration; k = k, kwargs...)
     fig = Figure()
@@ -243,6 +247,16 @@ function _rayplot!(
     raytraceplot!(surfaces, system.a, raypoints(system)...; kwargs...)
 end
 
+function caustic(surfaces::Matrix{Float64}, system::System,
+                 d::Float64 = d; theme = default_plot_theme, kwargs...)
+    with_theme(() -> raytraceplot(surfaces, system, d; kwargs...), theme)
+end
+
+function caustic!(surfaces::Matrix{Float64}, system::System,
+                  d::Float64 = d; theme = default_plot_theme, kwargs...)
+    with_theme(() -> raytraceplot!(surfaces, system, d; kwargs...), theme)
+end
+
 function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
     z, y = p.arg1[], p.arg2[]
     attr = p.attributes
@@ -265,6 +279,15 @@ end
 function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
                                T, Vector{T}}}) where T <: Vector{Float64}
     surfaces, a, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
+    attr = p.attributes
+    raytraceplot!(p, p.attributes, surfaces, a, z)
+    raytraceplot!(p, attr, z, y)
+    return p
+end
+
+function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
+                               Vector{Float64}}})
+    surfaces, a, z = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
     surface_color = attr.surface_color[]
     n = @view surfaces[:,3]
@@ -302,7 +325,53 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
         lines!(p, attr, z_edge, y_edge; color = surface_color)
         lines!(p, attr, z_edge, -y_edge; color = surface_color)
     end
-    raytraceplot!(p, attr, z, y)
+    return p
+end
+
+function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Float64}})
+    surfaces, system, d = p.arg1[], p.arg2[], p.arg3[]
+    attr = p.attributes
+    color = attr.ray_colors[][1]
+    surface_color = attr.surface_color[]
+    (; a, marginal, stop) = system
+    (; z) = marginal
+    raytraceplot!(p, p.attributes, surfaces, a, z)
+    stop_size = marginal.y[begin+stop]
+    y_stop = 0.0
+    d *= marginal.y[1]
+    yi = d
+    while true
+        ray = raytrace(surfaces, yi, 0.0, RealRay)
+        if ray.y[begin+stop] > stop_size
+            break
+        end
+        # focus
+        zf = ray.z[end-1] - ray.y[end] / tan(ray.u[end])
+        # extend the rays for negative longitudinal spherical aberration
+        if zf < z[end]
+            zf = z[end]
+            s = ray.z[end] - ray.z[end-1]
+            yf = ray.y[end] + tan(ray.u[end]) * (z[end] - z[end-1] + s)
+        else
+            yf = 0.0
+        end
+        # object space
+        lines!(p, attr, [z[1], ray.z[1]], [ray.y[1]; ray.y[1]]; color)
+        lines!(p, attr, [z[1], ray.z[1]], [-ray.y[1]; -ray.y[1]]; color)
+        # surface trace
+        lines!(p, attr, @view(ray.z[1:end-1]), @view(ray.y[2:end]); color)
+        lines!(p, attr, @view(ray.z[1:end-1]), -@view(ray.y[2:end]); color)
+        # paraxial focus
+        lines!(p, attr, [z[end], z[end]], [-stop_size, stop_size];
+               color = surface_color)
+        # image space
+        lines!(p, attr, [ray.z[end-1], zf], [ray.y[end], yf]; color)
+        lines!(p, attr, [ray.z[end-1], zf], [-ray.y[end], -yf]; color)
+        yi += d
+    end
+    # optical axis
+    lines!(p, attr, [z[1], z[end]], [0.0, 0.0]; color = surface_color)
+    DataInspector(textcolor = :black)
     return p
 end
 
