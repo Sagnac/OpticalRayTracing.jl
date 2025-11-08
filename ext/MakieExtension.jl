@@ -26,7 +26,7 @@ end
 
 const k = 1024
 
-const d = 0.05
+const k_rays = 22
 
 _rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)
 
@@ -250,13 +250,13 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
 end
 
 function caustic(surfaces::Matrix{Float64}, system::System,
-                 d::Float64 = d; theme = default_plot_theme, kwargs...)
-    with_theme(() -> raytraceplot(surfaces, system, d; kwargs...), theme)
+                 k_rays::Int = k_rays; theme = default_plot_theme, kwargs...)
+    with_theme(() -> raytraceplot(surfaces, system, k_rays; kwargs...), theme)
 end
 
 function caustic!(surfaces::Matrix{Float64}, system::System,
-                  d::Float64 = d; theme = default_plot_theme, kwargs...)
-    with_theme(() -> raytraceplot!(surfaces, system, d; kwargs...), theme)
+                  k_rays::Int = k_rays; theme = default_plot_theme, kwargs...)
+    with_theme(() -> raytraceplot!(surfaces, system, k_rays; kwargs...), theme)
 end
 
 # plots ray bundles
@@ -335,32 +335,31 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
 end
 
 # plots the caustic
-function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Float64}})
-    surfaces, system, d = p.arg1[], p.arg2[], p.arg3[]
+function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Int}})
+    surfaces, system, k_rays = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
     color = attr.ray_colors[][1]
     surface_color = attr.surface_color[]
     (; a, marginal, stop) = system
     (; z) = marginal
     raytraceplot!(p, p.attributes, surfaces, a, stop, z)
-    stop_size = marginal.y[begin+stop]
-    y_stop = 0.0
-    d *= marginal.y[1]
-    yi = d
-    while true
+    real_marginal_ray = trace_marginal_ray(surfaces, system)
+    a_stop = marginal.y[begin+stop]
+    d = marginal.y[1] / k_rays
+    yi = real_marginal_ray.y[1]
+    paraxial_BFD = z[end] - z[end-1]
+    marginal_BFD = -real_marginal_ray.y[end] / tan(real_marginal_ray.u[end])
+    for i = 1:k_rays
         ray = raytrace(surfaces, yi, 0.0, RealRay)
-        if ray.y[begin+stop] > stop_size
-            break
-        end
-        # focus
-        zf = ray.z[end-1] - ray.y[end] / tan(ray.u[end])
-        # extend the rays for negative longitudinal spherical aberration
-        if zf < z[end]
+        if marginal_BFD < paraxial_BFD
+            # extend the rays for negative longitudinal spherical aberration
             zf = z[end]
             s = ray.z[end] - ray.z[end-1]
-            yf = ray.y[end] + tan(ray.u[end]) * (z[end] - z[end-1] + s)
+            yf = ray.y[end] + tan(ray.u[end]) * (paraxial_BFD + s)
         else
-            yf = 0.0
+            # extend out to the marginal focus for positive LSA
+            zf = real_marginal_ray.z[end-1] + marginal_BFD
+            yf = ray.y[end] + tan(ray.u[end]) * marginal_BFD
         end
         # object space
         lines!(p, attr, [z[1], ray.z[1]], [ray.y[1]; ray.y[1]]; color)
@@ -369,12 +368,11 @@ function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Float64}})
         lines!(p, attr, @view(ray.z[1:end-1]), @view(ray.y[2:end]); color)
         lines!(p, attr, @view(ray.z[1:end-1]), -@view(ray.y[2:end]); color)
         # paraxial focus
-        lines!(p, attr, [z[end], z[end]], [-stop_size, stop_size];
-               color = surface_color)
+        lines!(p, attr, [z[end], z[end]], [-a_stop, a_stop]; color = surface_color)
         # image space
         lines!(p, attr, [ray.z[end-1], zf], [ray.y[end], yf]; color)
         lines!(p, attr, [ray.z[end-1], zf], [-ray.y[end], -yf]; color)
-        yi += d
+        yi -= d
     end
     # optical axis
     lines!(p, attr, [z[1], z[end]], [0.0, 0.0]; color = surface_color)
