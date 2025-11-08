@@ -216,19 +216,21 @@ end
 function _rayplot(
     surfaces::Matrix{Float64},
     a::AbstractVector,
+    stop::Int,
     rays::RayBasis;
     kwargs...
 )
-    raytraceplot(surfaces, a, raypoints(rays)...; kwargs...)
+    raytraceplot(surfaces, a, stop, raypoints(rays)...; kwargs...)
 end
 
 function _rayplot!(
     surfaces::Matrix{Float64},
     a::AbstractVector,
+    stop::Int,
     rays::RayBasis;
     kwargs...
 )
-    raytraceplot!(surfaces, a, raypoints(rays)...; kwargs...)
+    raytraceplot!(surfaces, a, stop, raypoints(rays)...; kwargs...)
 end
 
 function _rayplot(
@@ -236,7 +238,7 @@ function _rayplot(
     system::System;
     kwargs...
 )
-    raytraceplot(surfaces, system.a, raypoints(system)...; kwargs...)
+    raytraceplot(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
 end
 
 function _rayplot!(
@@ -244,7 +246,7 @@ function _rayplot!(
     system::System;
     kwargs...
 )
-    raytraceplot!(surfaces, system.a, raypoints(system)...; kwargs...)
+    raytraceplot!(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
 end
 
 function caustic(surfaces::Matrix{Float64}, system::System,
@@ -276,18 +278,18 @@ function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
     return p
 end
 
-function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
+function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
                                T, Vector{T}}}) where T <: Vector{Float64}
-    surfaces, a, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
+    surfaces, a, stop, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[], p.arg5[]
     attr = p.attributes
-    raytraceplot!(p, p.attributes, surfaces, a, z)
+    raytraceplot!(p, p.attributes, surfaces, a, stop, z)
     raytraceplot!(p, attr, z, y)
     return p
 end
 
-function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
+function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
                                Vector{Float64}}})
-    surfaces, a, z = p.arg1[], p.arg2[], p.arg3[]
+    surfaces, a, stop, z = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
     attr = p.attributes
     surface_color = attr.surface_color[]
     n = @view surfaces[:,3]
@@ -307,8 +309,9 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector,
             zi = [z_vertex, z_vertex]
             y_surface = [0.0, ai]
         end
-        lines!(p, attr, zi, y_surface; color = surface_color)
-        lines!(p, attr, zi, -y_surface; color = surface_color)
+        linestyle = i == stop ? (; linestyle = :dot) : (; )
+        lines!(p, attr, zi, y_surface; color = surface_color, linestyle...)
+        lines!(p, attr, zi, -y_surface; color = surface_color, linestyle...)
         push!(z_corners, z_max)
         push!(y_corners, y_surface[end])
     end
@@ -335,7 +338,7 @@ function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Float64}})
     surface_color = attr.surface_color[]
     (; a, marginal, stop) = system
     (; z) = marginal
-    raytraceplot!(p, p.attributes, surfaces, a, z)
+    raytraceplot!(p, p.attributes, surfaces, a, stop, z)
     stop_size = marginal.y[begin+stop]
     y_stop = 0.0
     d *= marginal.y[1]
