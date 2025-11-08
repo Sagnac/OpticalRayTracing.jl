@@ -28,6 +28,72 @@ const k = 1024
 
 const d = 0.05
 
+_rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)
+
+_rayplot!(x...; kwargs...) = raytraceplot!(raypoints(x...)...; kwargs...)
+
+function _rayplot(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
+    _rayplot(solve(lens, a, h′); kwargs...)
+end
+
+function _rayplot!(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
+    _rayplot!(solve(lens, a, h′); kwargs...)
+end
+
+function _rayplot(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    h′::Float64 = -0.5;
+    kwargs...
+)
+    _rayplot(Lens(surfaces), a, h′; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    h′::Float64 = -0.5;
+    kwargs...
+)
+    _rayplot!(Lens(surfaces), a, h′; kwargs...)
+end
+
+function _rayplot(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    stop::Int,
+    rays::RayBasis;
+    kwargs...
+)
+    raytraceplot(surfaces, a, stop, raypoints(rays)...; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    a::AbstractVector,
+    stop::Int,
+    rays::RayBasis;
+    kwargs...
+)
+    raytraceplot!(surfaces, a, stop, raypoints(rays)...; kwargs...)
+end
+
+function _rayplot(
+    surfaces::Matrix{Float64},
+    system::System;
+    kwargs...
+)
+    raytraceplot(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
+end
+
+function _rayplot!(
+    surfaces::Matrix{Float64},
+    system::System;
+    kwargs...
+)
+    raytraceplot!(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
+end
+
 function wavefan(W::Aberration; k = k, kwargs...)
     fig = Figure()
     tangential_axis = Axis(fig[1,1];
@@ -183,72 +249,6 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     return fig
 end
 
-_rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)
-
-_rayplot!(x...; kwargs...) = raytraceplot!(raypoints(x...)...; kwargs...)
-
-function _rayplot(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
-    _rayplot(solve(lens, a, h′); kwargs...)
-end
-
-function _rayplot!(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
-    _rayplot!(solve(lens, a, h′); kwargs...)
-end
-
-function _rayplot(
-    surfaces::Matrix{Float64},
-    a::AbstractVector,
-    h′::Float64 = -0.5;
-    kwargs...
-)
-    _rayplot(Lens(surfaces), a, h′; kwargs...)
-end
-
-function _rayplot!(
-    surfaces::Matrix{Float64},
-    a::AbstractVector,
-    h′::Float64 = -0.5;
-    kwargs...
-)
-    _rayplot!(Lens(surfaces), a, h′; kwargs...)
-end
-
-function _rayplot(
-    surfaces::Matrix{Float64},
-    a::AbstractVector,
-    stop::Int,
-    rays::RayBasis;
-    kwargs...
-)
-    raytraceplot(surfaces, a, stop, raypoints(rays)...; kwargs...)
-end
-
-function _rayplot!(
-    surfaces::Matrix{Float64},
-    a::AbstractVector,
-    stop::Int,
-    rays::RayBasis;
-    kwargs...
-)
-    raytraceplot!(surfaces, a, stop, raypoints(rays)...; kwargs...)
-end
-
-function _rayplot(
-    surfaces::Matrix{Float64},
-    system::System;
-    kwargs...
-)
-    raytraceplot(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
-end
-
-function _rayplot!(
-    surfaces::Matrix{Float64},
-    system::System;
-    kwargs...
-)
-    raytraceplot!(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
-end
-
 function caustic(surfaces::Matrix{Float64}, system::System,
                  d::Float64 = d; theme = default_plot_theme, kwargs...)
     with_theme(() -> raytraceplot(surfaces, system, d; kwargs...), theme)
@@ -259,6 +259,7 @@ function caustic!(surfaces::Matrix{Float64}, system::System,
     with_theme(() -> raytraceplot!(surfaces, system, d; kwargs...), theme)
 end
 
+# plots ray bundles
 function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
     z, y = p.arg1[], p.arg2[]
     attr = p.attributes
@@ -278,6 +279,7 @@ function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
     return p
 end
 
+# plots lens surfaces + rays
 function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
                                T, Vector{T}}}) where T <: Vector{Float64}
     surfaces, a, stop, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[], p.arg5[]
@@ -287,6 +289,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
     return p
 end
 
+# plots lens surfaces
 function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
                                Vector{Float64}}})
     surfaces, a, stop, z = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
@@ -331,6 +334,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
     return p
 end
 
+# plots the caustic
 function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Float64}})
     surfaces, system, d = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
