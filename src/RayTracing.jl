@@ -73,6 +73,8 @@ function sag(y, R)
     end
 end
 
+Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
+
 function raytrace(lens::Lens, y, ω,
                   a::AbstractVector = fill(Inf, size(lens, 1)); clip = false)
     (; M, n) = lens
@@ -162,6 +164,30 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     marginal_ray = extend(marginal_ray)
     τ = reduced_thickness(lens)
     return Ray{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
+end
+
+function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
+    (; marginal, a, stop) = system
+    y1 = marginal.y[1]
+    ray = raytrace(surfaces, y1, 0.0, RealRay)
+    a_stop = system.a[stop]
+    σ = sign(Δy_stop(ray, stop, a_stop))
+    d = σ * 0.1 * y1
+    y2 = y1 - d
+    while sign(Δy_stop(ray, stop, a_stop)) == σ
+        ray = raytrace(surfaces, y2, 0.0, RealRay)
+        y2 -= d
+    end
+    while abs(y2 - y1) > atol
+        y = (y1 + y2) / 2
+        ray = raytrace(surfaces, y, 0.0, RealRay)
+        if sign(Δy_stop(ray, stop, a_stop)) == σ
+            y1 = y
+        else
+            y2 = y
+        end
+    end
+    return ray
 end
 
 function trace_chief_ray(lens::Lens, stop::Int, marginal::Ray{Marginal}, h′ = -0.5)

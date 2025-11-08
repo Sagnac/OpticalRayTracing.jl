@@ -39,7 +39,7 @@ const δn = [0.0, dn1, 0.0, dn2, 0.0, 0.0, dn1, 0.0]
 
 const system = solve(surfaces, a, h′)
 
-const (; f, N, marginal, chief, EFFD, EBFD, EP, XP) = system
+const (; f, N, marginal, chief, EFFD, EBFD, EP, XP, stop) = system
 
 const EFL = 101.181
 const BFL = 77.405
@@ -253,7 +253,7 @@ end
     @test any(isnan, rt_clip)
 end
 
-@testset "full raytrace" begin
+@testset "real raytracing" begin
     yu_par = raytrace(surfaces, 1.0, 0.0).yu
     yu_real = raytrace(surfaces, 1.0, 0.0, RealRay).yu
     R, t = eachcol(surfaces)
@@ -264,6 +264,9 @@ end
     δ_y = sum(@views(abs.(yu_par[2:end,1] .- yu_real[2:end,1])))
     @test δ_θ < ϵ_θ
     @test δ_y < ϵ_y
+    atol = sqrt(eps())
+    real_marginal_ray = trace_marginal_ray(surfaces, system; atol)
+    @test real_marginal_ray.y[begin+stop] ≈ a[stop] atol = atol
 end
 
 const ray_scale = 1e-3
