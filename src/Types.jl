@@ -108,11 +108,13 @@ struct Aberration
     medial::Vector{Float64}
     tangential::Vector{Float64}
     λ::Float64
+    field_sign::Int
 end
 
 struct RayError{T <: Paraxial}
     W::Aberration
     nu::Float64
+    field_sign::Int
 end
 
 const SystemOrRayBasis = Union{System, RayBasis}

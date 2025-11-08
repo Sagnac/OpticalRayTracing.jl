@@ -16,7 +16,7 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
     u = marginal.u
     j = eachindex(R)
     A = [nu[i] + n[i] * y[i] / R[i] for i ∈ j]
-    Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j] .|> abs
+    Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j]
     yΔ = [y[i] * Δ(u, n, i) for i ∈ j]
     yδ = [y[i] * Δ(δn, n, i) for i ∈ j]
     P = [(inv(n[i+1]) - inv(n[i])) / R[i] for i ∈ j]
@@ -48,10 +48,14 @@ function aberrations(surfaces::Matrix{Float64}, system::SystemOrRayBasis,
     W111 = sum(lateral)
     Aberration(W040, W131, W222, W220, W311, W020, W111, W220P, W220M, W220T,
                spherical, coma, astigmatism, sagittal, distortion, axial, lateral,
-               petzval, medial, tangential, λ)
+               petzval, medial, tangential, λ, sign(chief.y[end]))
 end
 
-function (W::Aberration)(ρ, θ, H = 1)
+function (W::Aberration)(ρ, θ, H)
+    H = abs(H)
+    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    0.0 ≤ ρ ≤ 1.0 || throw(DomainError(ρ, "Domain: 0.0 ≤ ρ ≤ 1.0"))
+    H *= W.field_sign
     (; W040, W131, W222, W220, W311, W020, W111) = W
     w1 = W040 * ρ ^ 4
     w2 = W131 * H * ρ ^ 3 * cos(θ)
@@ -64,7 +68,7 @@ function (W::Aberration)(ρ, θ, H = 1)
     return w
 end
 
-function ray_error(ε, x, y, H = 1)
+function ray_error(ε, x, y, H)
     (; W040, W131, W222, W220, W311, W020, W111, λ) = ε.W
     (; nu) = ε
     ε1_y = 4 * W040 * (x ^ 2 * y + y ^ 3)
@@ -86,14 +90,29 @@ function ray_error(ε, x, y, H = 1)
     return ε_x, ε_y
 end
 
-(ε_y::RayError{Tangential})(y, H = 1) = ray_error(ε_y, 0, y, H)[2]
+function (ε_y::RayError{Tangential})(y, H)
+    H = abs(H)
+    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H *= ε_y.field_sign
+    ray_error(ε_y, 0, y, H)[2]
+end
 
-(ε_x::RayError{Sagittal})(x, H = 1) = ray_error(ε_x, x, 0, H)[1]
+function (ε_x::RayError{Sagittal})(x, H)
+    H = abs(H)
+    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H *= ε_x.field_sign
+    ray_error(ε_x, x, 0, H)[1]
+end
 
-(ε::RayError{Skew})(x, y, H = 1) = ray_error(ε, x, y, H)
+function (ε::RayError{Skew})(x, y, H)
+    H = abs(H)
+    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H *= ε.field_sign
+    ray_error(ε, x, y, H)
+end
 
 (ε::RayError{Skew})((x, y)::NTuple{2, Float64}, H) = ε(x, y, H)
 
 function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: Paraxial
-    RayError{T}(W, s.marginal.nu[end])
+    RayError{T}(W, s.marginal.nu[end], W.field_sign)
 end

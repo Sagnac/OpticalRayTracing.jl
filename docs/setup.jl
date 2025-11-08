@@ -18,6 +18,6 @@ surfaces = [
 a = [9.5, 9.5, 9.0, 9.0, 7.63, 8.5, 8.5, 8.5]
 
 # image height
-h′ = -21.5
+h′ = 21.5
 
 system = solve(surfaces, a, h′)
