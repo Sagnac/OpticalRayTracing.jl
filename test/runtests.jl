@@ -195,7 +195,7 @@ const SA5 = 0.125426
 const SA7 = 0.048670
 
 # Absolute tolerance of a quarter wave which is close to the data minimum
-const aberr_scale = 0.25
+const wave_scale = 0.25
 
 const aberr = aberrations(surfaces, system, λ, δn)
 
@@ -206,21 +206,21 @@ const ρ =  h′ ^ 2 / 2longitudinal_petzval
 
 @testset "aberration coefficients" begin
     for i in axes(third_order, 1)
-        @test aberr.spherical[i] ≈ (α * SI[i] / 8) atol = aberr_scale
-        @test aberr.coma[i] ≈ (α * SII[i] / 2) atol = aberr_scale
-        @test aberr.astigmatism[i] ≈ (α * SIII[i] / 2) atol = aberr_scale
-        @test aberr.petzval[i] ≈ (α * SIV[i] / 4) atol = aberr_scale
-        @test aberr.distortion[i] ≈ (α * SV[i] / 2) atol = aberr_scale
-        @test aberr.axial[i] ≈ (α * PAC[i] / 4) atol = aberr_scale
-        @test aberr.lateral[i] ≈ (α * PLC[i] / 2) atol = aberr_scale
+        @test aberr.spherical[i] ≈ (α * SI[i] / 8) atol = wave_scale
+        @test aberr.coma[i] ≈ (α * SII[i] / 2) atol = wave_scale
+        @test aberr.astigmatism[i] ≈ (α * SIII[i] / 2) atol = wave_scale
+        @test aberr.petzval[i] ≈ (α * SIV[i] / 4) atol = wave_scale
+        @test aberr.distortion[i] ≈ (α * SV[i] / 2) atol = wave_scale
+        @test aberr.axial[i] ≈ (α * PAC[i] / 4) atol = wave_scale
+        @test aberr.lateral[i] ≈ (α * PLC[i] / 2) atol = wave_scale
     end
-    @test aberr.W040 ≈ (α * W040 / 8) atol = aberr_scale
-    @test aberr.W131 ≈ (α * W131 / 2) atol = aberr_scale
-    @test aberr.W222 ≈ (α * W222 / 2) atol = aberr_scale
-    @test aberr.W220P ≈ (α * W220P / 4) atol = aberr_scale
-    @test aberr.W311 ≈ (α * W311 / 2) atol = aberr_scale
-    @test aberr.W020 ≈ (α * W020 / 4) atol = aberr_scale
-    @test aberr.W111 ≈ (α * W111 / 2) atol = aberr_scale
+    @test aberr.W040 ≈ (α * W040 / 8) atol = wave_scale
+    @test aberr.W131 ≈ (α * W131 / 2) atol = wave_scale
+    @test aberr.W222 ≈ (α * W222 / 2) atol = wave_scale
+    @test aberr.W220P ≈ (α * W220P / 4) atol = wave_scale
+    @test aberr.W311 ≈ (α * W311 / 2) atol = wave_scale
+    @test aberr.W020 ≈ (α * W020 / 4) atol = wave_scale
+    @test aberr.W111 ≈ (α * W111 / 2) atol = wave_scale
     @test ρ / f ≈ PTZ_F atol = system_scale
 end
 
