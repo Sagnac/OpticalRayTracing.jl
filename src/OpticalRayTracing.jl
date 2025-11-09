@@ -4,10 +4,9 @@ using Printf
 
 export TransferMatrix,
        Lens,
-       Ray,
        Marginal,
        Chief,
-       Paraxial,
+       ParaxialRay,
        Tangential,
        FOV,
        transfer,

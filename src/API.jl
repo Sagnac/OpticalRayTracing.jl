@@ -131,7 +131,7 @@ See also: [`rayplot`](@ref).
 rayplot!
 
 """
-    raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
+    raypoints(marginal::ParaxialRay{Marginal}, chief::ParaxialRay{Chief})
 
 Return the coordinates for the given ray basis; useful for manual plotting.
 """
@@ -141,7 +141,7 @@ raypoints
     raytrace(surfaces, y, ω, [a]; clip = false)
     raytrace(lens::Lens, y, ω)
 
-Trace a paraxial ray with height `y` and angle / slope `ω = nu` returning a `Ray{Tangential}` holding the `ynu` matrix.
+Trace a paraxial ray with height `y` and angle / slope `ω = nu` returning a `ParaxialRay{Tangential}` holding the `ynu` matrix.
 
 If a set of aperture semi-diameters `a` is specified and `clip = true` any blocked ray will result in `NaN` in the trace matrix.
 

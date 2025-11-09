@@ -113,6 +113,6 @@ end
 
 (ε::RayError{Skew})((x, y)::NTuple{2, Float64}, H) = ε(x, y, H)
 
-function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: Paraxial
+function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: AbstractRay
     RayError{T}(W, s.marginal.nu[end], W.field_sign)
 end

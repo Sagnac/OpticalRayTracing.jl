@@ -3,7 +3,7 @@
 
 raypoints(system::SystemOrRayBasis) = raypoints(system.marginal, system.chief)
 
-function raypoints(marginal::Ray{Marginal}, chief::Ray{Chief})
+function raypoints(marginal::ParaxialRay{Marginal}, chief::ParaxialRay{Chief})
     (; z, n) = marginal
     y0 = zero(z)
     if iszero(marginal.u[1])

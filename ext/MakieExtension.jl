@@ -348,17 +348,17 @@ function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Int}})
     d = marginal.y[1] / k_rays
     yi = real_marginal_ray.y[1]
     paraxial_BFD = z[end] - z[end-1]
-    marginal_BFD = -real_marginal_ray.y[end] / tan(real_marginal_ray.u[end])
+    marginal_BFD = real_marginal_ray.z[end] - real_marginal_ray.z[end-1]
     for i = 1:k_rays
         ray = raytrace(surfaces, yi, 0.0, RealRay)
-        if marginal_BFD < paraxial_BFD
+        if real_marginal_ray.z[end] < z[end]
             # extend the rays for negative longitudinal spherical aberration
             zf = z[end]
             s = ray.z[end] - ray.z[end-1]
             yf = ray.y[end] + tan(ray.u[end]) * (paraxial_BFD + s)
         else
             # extend out to the marginal focus for positive LSA
-            zf = real_marginal_ray.z[end-1] + marginal_BFD
+            zf = real_marginal_ray.z[end]
             yf = ray.y[end] + tan(ray.u[end]) * marginal_BFD
         end
         # object space

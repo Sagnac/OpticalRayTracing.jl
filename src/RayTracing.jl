@@ -90,7 +90,7 @@ function raytrace(lens::Lens, y, ω,
         rt[i+1,1] = y
         rt[i+1,2] = ω
     end
-    return Ray{Tangential}(rt, τ, n)
+    return ParaxialRay{Tangential}(rt, τ, n)
 end
 
 function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
@@ -115,7 +115,7 @@ function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
         rt[i+1,1] = y
         rt[i+1,2] = U
     end
-    return RealRay(rt, ts, n)
+    return RealRay{Tangential}(rt, ts, n)
 end
 
 function raytrace(surfaces::Matrix, y, ω,
@@ -138,8 +138,8 @@ function raytrace(system::System, ȳ, s)
     chief_ray[end,1] = -H / marginal_ray[end,2]
     τ = reduced_thickness(lens)
     rays = RayBasis(
-        Ray{Marginal}(marginal_ray, τ, lens.n),
-        Ray{Chief}(chief_ray, τ, lens.n),
+        ParaxialRay{Marginal}(marginal_ray, τ, lens.n),
+        ParaxialRay{Chief}(chief_ray, τ, lens.n),
         H
     )
     return rays
@@ -163,7 +163,7 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     marginal_ray *= s
     marginal_ray = extend(marginal_ray)
     τ = reduced_thickness(lens)
-    return Ray{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
+    return ParaxialRay{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
 function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
@@ -187,10 +187,13 @@ function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
             y2 = y
         end
     end
-    return ray
+    ray.z[end] += -ray.y[end] / tan(ray.u[end])
+    z = [-(extrema(ray.z)...) * 0.1; ray.z]
+    return RealRay{Marginal}(ray.y, ray.u, [ray.yu; [0.0 ray.u[end]]], ray.n, z)
 end
 
-function trace_chief_ray(lens::Lens, stop::Int, marginal::Ray{Marginal}, h′ = -0.5)
+function trace_chief_ray(lens::Lens, stop::Int,
+                         marginal::ParaxialRay{Marginal}, h′ = -0.5)
     (; n) = lens
     y = surface_ray(marginal.y)
     ynu = surface_ray(marginal.ynu)
@@ -205,7 +208,7 @@ function trace_chief_ray(lens::Lens, stop::Int, marginal::Ray{Marginal}, h′ = 
     chief_ray[begin,:] .= 0.0, nū
     chief_ray[end,:] .= h′, chief_ray[end-1,2]
     τ = reduced_thickness(lens)
-    return Ray{Chief}(chief_ray, τ, n)
+    return ParaxialRay{Chief}(chief_ray, τ, n)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)

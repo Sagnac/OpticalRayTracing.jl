@@ -1,18 +1,18 @@
-abstract type Paraxial end
+abstract type AbstractRay end
 
-abstract type Fundamental <: Paraxial end
+abstract type FundamentalRay <: AbstractRay end
 
-struct Tangential <: Paraxial end
+struct Tangential <: AbstractRay end
 
-struct Sagittal <: Paraxial end
+struct Sagittal <: AbstractRay end
 
-struct Skew <: Paraxial end
+struct Skew <: AbstractRay end
 
-struct Marginal <: Fundamental end
+struct Marginal <: FundamentalRay end
 
-struct Chief <: Fundamental end
+struct Chief <: FundamentalRay end
 
-struct Ray{T <: Paraxial}
+struct ParaxialRay{T <: AbstractRay}
     y::Vector{Float64}
     n::Vector{Float64}
     u::Vector{Float64}
@@ -20,13 +20,13 @@ struct Ray{T <: Paraxial}
     nu::Vector{Float64}
     ynu::Matrix{Float64}
     z::Vector{Float64}
-    function Ray{T}(ynu, τ, n) where T <: Paraxial
+    function ParaxialRay{T}(ynu, τ, n) where T <: AbstractRay
         y, nu = eachcol(ynu)
         n = [n; n[end]]
         u = map(/, nu, n)
         yu = [y u]
         t = map(*, τ, @view(n[1:end-2]))
-        if T <: Fundamental
+        if T <: FundamentalRay
             t = [t; -y[end-1] / u[end-1]]
         end
         z = cumsum(t)
@@ -36,18 +36,21 @@ struct Ray{T <: Paraxial}
     end
 end
 
-struct RealRay
+struct RealRay{T <: AbstractRay}
     y::Vector{Float64}
     u::Vector{Float64}
     yu::Matrix{Float64}
     n::Vector{Float64}
     z::Vector{Float64}
-    RealRay(yu, t, n) = new(eachcol(yu)..., yu, n, cumsum(t))
+end
+
+function RealRay{T}(yu, t, n) where T <: AbstractRay
+    RealRay{T}(eachcol(yu)..., yu, n, cumsum(t))
 end
 
 struct RayBasis
-    marginal::Ray{Marginal}
-    chief::Ray{Chief}
+    marginal::ParaxialRay{Marginal}
+    chief::ParaxialRay{Chief}
     H::Float64
 end
 
@@ -74,8 +77,8 @@ struct System
     stop::Int
     EP::Pupil
     XP::Pupil
-    marginal::Ray{Marginal}
-    chief::Ray{Chief}
+    marginal::ParaxialRay{Marginal}
+    chief::ParaxialRay{Chief}
     trace::Matrix{Float64}
     H::Float64
     P1::Float64
@@ -111,7 +114,7 @@ struct Aberration
     field_sign::Int
 end
 
-struct RayError{T <: Paraxial}
+struct RayError{T <: AbstractRay}
     W::Aberration
     nu::Float64
     field_sign::Int
