@@ -187,9 +187,12 @@ function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
             y2 = y
         end
     end
-    ray.z[end] += -ray.y[end] / tan(ray.u[end])
-    z = [-(extrema(ray.z)...) * 0.1; ray.z]
-    return RealRay{Marginal}(ray.y, ray.u, [ray.yu; [0.0 ray.u[end]]], ray.n, z)
+    ray.z[end] = ray.z[end-1] - ray.y[end] / tan(ray.u[end])
+    pushfirst!(ray.z, -(extrema(ray.z)...) * 0.1)
+    push!(ray.y, 0.0)
+    push!(ray.u, ray.u[end])
+    yu = vcat(ray.yu, hcat(0.0, ray.u[end]))
+    return RealRay{Marginal}(ray.y, ray.u, yu, ray.n, ray.z)
 end
 
 function trace_chief_ray(lens::Lens, stop::Int,
