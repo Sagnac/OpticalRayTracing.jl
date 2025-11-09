@@ -1,6 +1,6 @@
-using Test, Suppressor
+using Test
 using OpticalRayTracing
-using OpticalRayTracing: λ, _vignetting, surface_ray
+using OpticalRayTracing: λ, surface_ray
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
@@ -235,11 +235,11 @@ end
 end
 
 @testset "vignetting" begin
-    partial = @suppress _vignetting(system, a, system.stop)[4]
-    @test partial == [1, 2, 3, 6, 7]
-    slopes, FOVs = vignetting(system, a)
-    systems = [solve(surfaces, a, h′) for h′ in FOVs]
-    vignetting_matrices = @suppress [vignetting(system) for system in systems]
+    vig = vignetting(system, a)
+    @test vig.partial == [1, 2, 3, 6, 7]
+    _, slopes, heights = eachcol(vig.FOV)
+    systems = [solve(surfaces, a, h′) for h′ in heights]
+    vignetting_matrices = [vignetting(system).M for system in systems]
     a_ = (a for (i, a) in enumerate(a) if i != system.stop)
     for i = 1:3
         M = vignetting_matrices[i]

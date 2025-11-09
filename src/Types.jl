@@ -124,6 +124,15 @@ struct Aberration
     field_sign::Int
 end
 
+struct Vignetting
+    M::Matrix{Float64}
+    FOV::Matrix{Float64}
+    un::Bool
+    limit::Vector{Int}
+    partial::Vector{Int}
+    full::Vector{Int}
+end
+
 struct RayError{T <: AbstractRay}
     W::Aberration
     nu::Float64

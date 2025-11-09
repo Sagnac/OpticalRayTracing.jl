@@ -34,7 +34,8 @@ export TransferMatrix,
        spot_size,
        RealRay,
        caustic,
-       Prescription
+       Prescription,
+       Vignetting
 
 include("Types.jl")
 include("RayTracing.jl")

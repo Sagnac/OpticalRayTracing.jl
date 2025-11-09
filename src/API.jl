@@ -222,22 +222,24 @@ See also: [`reverse_transfer`](@ref).
 transfer
 
 """
-    vignetting(system, a)
+    vignetting(system, [a = system.a])
 
 Perform a vignetting analysis on the `System` for the given aperture sizes.
 
-Determines the maximum FOVs corresponding to those sizes as well as returning a semi-diameter matrix with columns corresponding to conditions:
+Determines the maximum FOVs corresponding to those sizes as well as returning a `Vignetting` data structure holding a semi-diameter matrix in its `M` field with columns corresponding to conditions:
 * input;
 * stop limited;
 * unvignetted;
 * half-vignetted;
 * fully vignetted.
 
+The fields of view are stored in the `FOV` field with rows corresponding to the unvignetted, half-vignetted, and fully vignetted cases and the columns corresponding to the full fields of view in degrees, paraxial chief ray slopes, and image heights, respectively.
+
 ----
 
-    vignetting(system, a, ::Type{FOV})
+    vignetting(rays::RayBasis, system::System, a::AbstractVector = system.a)
 
-Return a two-tuple of three-element vectors corresponding to the maximum fields for the unvignetted, half-vignetted, and fully vignetted cases with the first element of the tuple corresponding to the paraxial chief ray slopes and the second corresponding to the image heights.
+Same as above, but for a traced `RayBasis` corresponding to the marginal & chief rays of a non-collimated beam / an object not at infinity.
 """
 vignetting
 
