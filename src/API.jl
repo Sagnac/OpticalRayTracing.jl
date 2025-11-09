@@ -1,5 +1,5 @@
 """
-    Lens(surfaces::Matrix{Float64})
+    Lens(surfaces::AbstractMatrix)
 
 Construct a lens from a 3 column surface matrix where the first column corresponds to the radii of curvature, the second column to the thicknesses, and the third to the refractive indices.
 

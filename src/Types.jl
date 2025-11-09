@@ -63,6 +63,16 @@ struct Lens <: AbstractArray{Float64, 2}
     n::Vector{Float64}
 end
 
+@kwdef struct Prescription <: AbstractArray{Float64, 2}
+    M::Matrix{Float64} = Matrix{Float64}(undef, 0, 0) # surfaces
+    R::Vector{Float64}
+    t::Vector{Float64}
+    n::Vector{Float64}
+    Prescription(M) = new(M, eachcol(M)...)
+    Prescription(R, t, n) = new([R t n], R, t, n)
+    Prescription(M, R, t, n) = Prescription(R, t, n)
+end
+
 struct Pupil
     D::Float64
     t::Float64
@@ -122,4 +132,4 @@ end
 
 const SystemOrRayBasis = Union{System, RayBasis}
 
-const LensOrTransferMatrix = Union{Lens, TransferMatrix}
+const OpticalMatrix = Union{Lens, Prescription, TransferMatrix}

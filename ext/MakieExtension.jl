@@ -41,7 +41,7 @@ function _rayplot!(lens::Lens, a::AbstractVector, h′ = -0.5; kwargs...)
 end
 
 function _rayplot(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     a::AbstractVector,
     h′::Float64 = -0.5;
     kwargs...
@@ -50,7 +50,7 @@ function _rayplot(
 end
 
 function _rayplot!(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     a::AbstractVector,
     h′::Float64 = -0.5;
     kwargs...
@@ -59,7 +59,7 @@ function _rayplot!(
 end
 
 function _rayplot(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     a::AbstractVector,
     stop::Int,
     rays::RayBasis;
@@ -69,7 +69,7 @@ function _rayplot(
 end
 
 function _rayplot!(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     a::AbstractVector,
     stop::Int,
     rays::RayBasis;
@@ -79,7 +79,7 @@ function _rayplot!(
 end
 
 function _rayplot(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     system::System;
     kwargs...
 )
@@ -87,7 +87,7 @@ function _rayplot(
 end
 
 function _rayplot!(
-    surfaces::Matrix{Float64},
+    surfaces::AbstractMatrix,
     system::System;
     kwargs...
 )
@@ -249,12 +249,12 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     return fig
 end
 
-function caustic(surfaces::Matrix{Float64}, system::System,
+function caustic(surfaces::AbstractMatrix, system::System,
                  k_rays::Int = k_rays; theme = default_plot_theme, kwargs...)
     with_theme(() -> raytraceplot(surfaces, system, k_rays; kwargs...), theme)
 end
 
-function caustic!(surfaces::Matrix{Float64}, system::System,
+function caustic!(surfaces::AbstractMatrix, system::System,
                   k_rays::Int = k_rays; theme = default_plot_theme, kwargs...)
     with_theme(() -> raytraceplot!(surfaces, system, k_rays; kwargs...), theme)
 end

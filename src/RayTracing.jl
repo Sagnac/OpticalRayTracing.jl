@@ -27,7 +27,7 @@ surface_ray(v::AbstractVector) = @view v[begin+1:end-1]
 
 surface_ray(M::AbstractMatrix) = @view M[begin+1:end-1,:]
 
-function Lens(surfaces::Matrix{Float64})
+function Lens(surfaces::AbstractMatrix)
     rows = size(surfaces, 1)
     R, t, n = eachcol(surfaces)
     M = Matrix{Float64}(undef, rows, 2)
@@ -93,7 +93,7 @@ function raytrace(lens::Lens, y, ω,
     return ParaxialRay{Tangential}(rt, τ, n)
 end
 
-function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
+function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
     R, t, n = eachcol(surfaces)
     ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
@@ -118,7 +118,7 @@ function raytrace(surfaces::Matrix{Float64}, y, U, ::Type{RealRay})
     return RealRay{Tangential}(rt, ts, n)
 end
 
-function raytrace(surfaces::Matrix, y, ω,
+function raytrace(surfaces::AbstractMatrix, y, ω,
                   a::AbstractVector = fill(Inf, size(surfaces, 1)); clip = false)
     raytrace(Lens(surfaces), y, ω, a; clip)
 end
@@ -240,7 +240,7 @@ end
 solve(surfaces, a, h′ = -0.5) = solve(Lens(surfaces), a, h′)
 
 # paraxial incidence angles
-function incidences(surfaces::Matrix{Float64}, system::SystemOrRayBasis)
+function incidences(surfaces::AbstractMatrix, system::SystemOrRayBasis)
     R = @view surfaces[2:end,1]
     (; marginal, chief) = system
     (; n) = marginal

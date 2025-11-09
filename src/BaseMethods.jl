@@ -58,13 +58,13 @@ end
 
 getindex(M::TransferMatrix) = M.M
 
-getindex(M::LensOrTransferMatrix, i::Int) = M.M[i]
+getindex(M::OpticalMatrix, i::Int) = M.M[i]
 
-setindex!(M::Lens, v, i::Int) = M.M[i] = v
+setindex!(M::Union{Lens, Prescription}, v, i::Int) = M.M[i] = v
 
-size(M::LensOrTransferMatrix) = size(M.M)
+size(M::OpticalMatrix) = size(M.M)
 
-IndexStyle(::Type{<:LensOrTransferMatrix}) = IndexLinear()
+IndexStyle(::Type{<:OpticalMatrix}) = IndexLinear()
 
 function getindex(rays::T, i::Int) where T <: RayBasis
     i > 2 ? throw(BoundsError(rays, i)) : getfield(rays, i)
