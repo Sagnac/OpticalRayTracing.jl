@@ -1,6 +1,8 @@
 # Helium Fraunhofer d-line wavelength in millimeters
 const λ = 587.5618e-6
 
+const k_rays = 22
+
 Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]
 
 function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,
@@ -115,4 +117,21 @@ end
 
 function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: AbstractRay
     RayError{T}(W, s.marginal.nu[end], W.field_sign)
+end
+
+function TSA(surfaces::AbstractMatrix, system::System, k_rays::Int = k_rays)
+    paraxial_marginal = system.marginal
+    real_marginal = trace_marginal_ray(surfaces, system)
+    y = range(real_marginal.y[1] / k_rays, real_marginal.y[1], k_rays)
+    ε = Vector{Float64}(undef, k_rays)
+    ū = real_marginal.u[end]
+    paraxial_BFD = paraxial_marginal.z[end] - paraxial_marginal.z[end-1]
+    sag = real_marginal.z[end-1] - paraxial_marginal.z[end-1]
+    ε[end] = real_marginal.y[end-1] + tan(ū) * (paraxial_BFD - sag)
+    for (i, yi) in enumerate(Base.Iterators.take(y, k_rays - 1))
+        ray = raytrace(surfaces, yi, 0.0, RealRay)
+        sag = ray.z[end-1] - ray.z[end] # z-coord end-point is vertex position
+        ε[i] = ray.y[end] + tan(ray.u[end]) * (paraxial_BFD - sag)
+    end
+    return y, ε
 end

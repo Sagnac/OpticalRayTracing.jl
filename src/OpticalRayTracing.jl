@@ -35,7 +35,8 @@ export TransferMatrix,
        RealRay,
        caustic,
        Prescription,
-       Vignetting
+       Vignetting,
+       TSA
 
 include("Types.jl")
 include("RayTracing.jl")

@@ -2,7 +2,7 @@ module MakieExtension
 
 using OpticalRayTracing, Makie, Printf
 
-using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration
+using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion, spot_size, caustic
@@ -25,8 +25,6 @@ end
 end
 
 const k = 1024
-
-const k_rays = 22
 
 _rayplot(x...; kwargs...) = raytraceplot(raypoints(x...)...; kwargs...)
 
