@@ -2,7 +2,8 @@ module MakieExtension
 
 using OpticalRayTracing, Makie, Printf
 
-using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays
+using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays,
+                         surface_to_focus
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion, spot_size, caustic
@@ -347,24 +348,22 @@ function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Int}})
     a_stop = marginal.y[begin+stop]
     y = range(real_marginal.y[1], real_marginal.y[1] / k_rays, k_rays)
     paraxial_BFD = z[end] - z[end-1]
-    s = real_marginal.z[end-1] - z[end-1]
     marginal_focus = real_marginal.z[end]
     # from vertex
-    marginal_BFD = marginal_focus - real_marginal.z[end-1] + s
+    marginal_BFD = marginal_focus - z[end-1]
     for yi ∈ y
         # this retraces the marginal to avoid manipulating it specifically
         # as the ray already contains image & object space extensions
         ray = raytrace(surfaces, yi, 0.0, RealRay)
-        s = ray.z[end-1] - ray.z[end]
         if marginal_focus < z[end]
             # extend rays out to the paraxial image plane
             # for negative longitudinal spherical aberration
             zf = z[end]
-            yf = ray.y[end] + tan(ray.u[end]) * (paraxial_BFD - s)
+            yf = transfer(ray, surface_to_focus(paraxial_BFD, ray))
         else
             # extend out to the marginal focus for positive LSA
             zf = marginal_focus
-            yf = ray.y[end] + tan(ray.u[end]) * (marginal_BFD - s)
+            yf = transfer(ray, surface_to_focus(marginal_BFD, ray))
         end
         # object space
         lines!(p, attr, [z[1], ray.z[1]], [ray.y[1]; ray.y[1]]; color)

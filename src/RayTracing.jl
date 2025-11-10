@@ -73,6 +73,19 @@ function sag(y, R)
     end
 end
 
+# z-coordinate end-point is vertex position
+sag(ray::RealRay{Tangential}) = ray.z[end-1] - ray.z[end]
+
+function sag(real::RealRay{Marginal}, paraxial::ParaxialRay{Marginal})
+    real.z[end-1] - paraxial.z[end-1]
+end
+
+surface_to_focus(BFD, x...) = BFD - sag(x...)
+
+transfer(ray::RealRay{Marginal}, t) = ray.y[end-1] + tan(ray.u[end-1]) * t
+
+transfer(ray::RealRay{Tangential}, t) = ray.y[end] + tan(ray.u[end]) * t
+
 Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
 
 function raytrace(lens::Lens, y, ω,
