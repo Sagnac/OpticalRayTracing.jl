@@ -104,8 +104,7 @@ function wavefan(W::Aberration; k = k, kwargs...)
         xlabel = L"x_p",
         ylabel = L"OPD"
     )
-    ρ = x = H = range(0.0, 1.0, k)
-    ρ_rev = reverse(ρ)
+    ρ_x = x = H = range(0.0, 1.0, k)
     grid = GridLayout(fig[1,3])
     grid[2,1] = slider = Slider(fig;
         horizontal = false,
@@ -119,13 +118,12 @@ function wavefan(W::Aberration; k = k, kwargs...)
         reset_limits!(sagittal_axis)
     end
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
-    y1 = range(-1.0, 0.0, k)
-    y2 = -reverse(y1)
-    Wy1 = @lift W.(ρ_rev, π, $H)
-    Wy2 = @lift W.(ρ, 0.0, $H)
-    Wx = @lift W.(ρ, π/2, $H)
-    lines!(tangential_axis, y1, Wy1; color = :black, kwargs...)
-    lines!(tangential_axis, y2, Wy2; color = :black, kwargs...)
+    y = range(-1.0, 1.0, k)
+    ρ_y = abs.(y)
+    θ = atan.(0.0, y)
+    Wy = @lift W.(ρ_y, θ, $H)
+    Wx = @lift W.(ρ_x, π/2, $H)
+    lines!(tangential_axis, y, Wy; color = :black, kwargs...)
     lines!(sagittal_axis, x, Wx; color = :black, kwargs...)
     DataInspector(fig)
     return fig
