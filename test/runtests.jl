@@ -267,6 +267,9 @@ end
     atol = sqrt(eps())
     real_marginal_ray = trace_marginal_ray(surfaces, system; atol)
     @test real_marginal_ray.y[begin+stop] ≈ a[stop] atol = atol
+    # fitting order and relative error are arbitrary at the moment
+    B1 = SA(TSA(surfaces, system)..., 9)[1]
+    @test abs(B1 / W040 - 1) < 0.05
 end
 
 const ray_scale = 1e-3

@@ -36,7 +36,8 @@ export TransferMatrix,
        caustic,
        Prescription,
        Vignetting,
-       TSA
+       TSA,
+       SA
 
 include("Types.jl")
 include("RayTracing.jl")

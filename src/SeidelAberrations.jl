@@ -132,5 +132,14 @@ function TSA(surfaces::AbstractMatrix, system::System, k_rays::Int = k_rays)
         t = surface_to_focus(paraxial_BFD, ray)
         ε[i] = transfer(ray, t)
     end
-    return y, ε
+    return collect(y), ε
+end
+
+function SA(y::Vector, ε::Vector, degree::Int)
+    if iseven(degree) || degree < 3
+        throw(DomainError(degree, "Required: isodd(degree) && degree ≥ 3"))
+    end
+    yₚ = y / maximum(y)
+    A = [yₚ ^ k for yₚ ∈ yₚ, k ∈ (3:2:degree)]
+    return A \ ε
 end
