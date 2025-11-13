@@ -82,11 +82,23 @@ end
 
 surface_to_focus(BFD, x...) = BFD - sag(x...)
 
-transfer(ray::RealRay{Marginal}, t) = ray.y[end-1] + tan(ray.u[end-1]) * t
+function transfer(ray::RealRay{Marginal}, t)
+    transfer(ray.y[end-1], ray.u[end-1], t, RealRay)
+end
 
-transfer(ray::RealRay{Tangential}, t) = ray.y[end] + tan(ray.u[end]) * t
+function transfer(ray::RealRay{Tangential}, t)
+    transfer(ray.y[end], ray.u[end], t, RealRay)
+end
+
+transfer(y, u, t, ::Type{RealRay}) = y + tan(u) * t
 
 Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
+
+function Δy_stop(surfaces, ȳ′, ū′, t, stop)
+    ȳ′ = transfer(ȳ′, ū′, t, RealRay)
+    ray = raytrace(surfaces, ȳ′, ū′, RealRay)
+    return ray, ray.y[begin+stop]
+end
 
 function raytrace(lens::Lens, y, ω,
                   a::AbstractVector = fill(Inf, size(lens, 1)); clip = false)
@@ -225,6 +237,34 @@ function trace_chief_ray(lens::Lens, stop::Int,
     chief_ray[end,:] .= h′, chief_ray[end-1,2]
     τ = reduced_thickness(lens)
     return ParaxialRay{Chief}(chief_ray, τ, n)
+end
+
+function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
+    R = -surfaces[end:-1:2, 1]
+    t = @view surfaces[end:-1:1, 2]
+    n = @view surfaces[end:-1:1, 3]
+    rev_surfaces = [[Inf; R] t n]
+    (; chief, marginal) = system
+    stop = length(R) - system.stop + 1
+    ȳ′ = chief.y[end]
+    ū′ = -chief.u[end]
+    t = marginal.z[end] - marginal.z[end-1]
+    ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+    ϵ = sqrt(eps())
+    while abs(y_stop) > atol
+        δy = Δy_stop(rev_surfaces, ȳ′, ū′ + ϵ, t, stop)[2]
+        ū′ -= y_stop * ϵ / (δy - y_stop)
+        ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+    end
+    ȳ = [0.0; reverse(ray.y)]
+    ȳ[end] = ȳ′
+    ū = [-reverse(ray.u); -ray.u[1]]
+    ȳū = [ȳ ū]
+    n = surfaces[:,3]
+    z = ray.z[end] .- reverse(ray.z)
+    z[1] = -ȳ[2] / tan(ū[1])
+    push!(z, z[end] - ȳ[end-1] / tan(ū[end-1]))
+    return RealRay{Chief}(ȳ, ū, ȳū, n, z)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
