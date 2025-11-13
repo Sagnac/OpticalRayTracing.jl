@@ -82,11 +82,23 @@ end
 
 surface_to_focus(BFD, x...) = BFD - sag(x...)
 
-transfer(ray::RealRay{Marginal}, t) = ray.y[end-1] + tan(ray.u[end-1]) * t
+function transfer(ray::RealRay{Marginal}, t)
+    transfer(ray.y[end-1], ray.u[end-1], t, RealRay)
+end
 
-transfer(ray::RealRay{Tangential}, t) = ray.y[end] + tan(ray.u[end]) * t
+function transfer(ray::RealRay{Tangential}, t)
+    transfer(ray.y[end], ray.u[end], t, RealRay)
+end
+
+transfer(y, u, t, ::Type{RealRay}) = y + tan(u) * t
 
 Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
+
+function Δy_stop(surfaces, ȳ′, ū′, t, stop)
+    ȳ′ = transfer(ȳ′, ū′, t)
+    ray = raytrace(surfaces, ȳ′, ū′, RealRay)
+    return ray, ray.y[begin+stop]
+end
 
 function raytrace(lens::Lens, y, ω,
                   a::AbstractVector = fill(Inf, size(lens, 1)); clip = false)
@@ -179,7 +191,7 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     return ParaxialRay{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
-function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
+function trace_marginal_ray(surfaces, system::System, ϵ = sqrt(eps()))
     (; marginal, a, stop) = system
     y1 = marginal.y[1]
     ray = raytrace(surfaces, y1, 0.0, RealRay)
@@ -191,7 +203,7 @@ function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
         ray = raytrace(surfaces, y2, 0.0, RealRay)
         y2 -= d
     end
-    while abs(y2 - y1) > atol
+    while abs(y2 - y1) > ϵ
         y = (y1 + y2) / 2
         ray = raytrace(surfaces, y, 0.0, RealRay)
         if sign(Δy_stop(ray, stop, a_stop)) == σ
@@ -225,6 +237,32 @@ function trace_chief_ray(lens::Lens, stop::Int,
     chief_ray[end,:] .= h′, chief_ray[end-1,2]
     τ = reduced_thickness(lens)
     return ParaxialRay{Chief}(chief_ray, τ, n)
+end
+
+function trace_chief_ray(surfaces, system::System, ϵ = sqrt(eps()))
+    R = -surfaces[end:-1:2, 1]
+    t = @view surfaces[end:-1:1, 2]
+    n = @view surfaces[end:-1:1, 3]
+    rev_surfaces = [[Inf; R] t n]
+    (; chief, marginal) = system
+    stop = length(R) - system.stop + 1
+    ȳ′ = chief.y[end]
+    ū′ = -chief.u[end]
+    t = marginal.z[end] - marginal.z[end-1]
+    ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+    while abs(y_stop) > ϵ
+        δy = Δy_stop(rev_surfaces, ȳ′, ū′ + ϵ, t, stop)[2]
+        ū′ -= y_stop * ϵ / (δy - y_stop)
+        ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+    end
+    y = [0.0; reverse(ray.y)]
+    y[end] = ȳ′
+    u = [-reverse(ray.u); -ray.u[1]]
+    yu = [y u]
+    n = surfaces[:,3]
+    ray.z[end] = ray.z[end-1] - y[end-1] / tan(u[end-1])
+    pushfirst!(ray.z, -y[2] / tan(u[1]))
+    return RealRay{Chief}(y, u, yu, n, ray.z)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)

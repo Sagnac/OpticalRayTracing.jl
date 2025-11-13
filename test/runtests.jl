@@ -264,9 +264,9 @@ end
     δ_y = sum(@views(abs.(yu_par[2:end,1] .- yu_real[2:end,1])))
     @test δ_θ < ϵ_θ
     @test δ_y < ϵ_y
-    atol = sqrt(eps())
-    real_marginal_ray = trace_marginal_ray(surfaces, system; atol)
-    @test real_marginal_ray.y[begin+stop] ≈ a[stop] atol = atol
+    ϵ = sqrt(eps())
+    real_marginal_ray = trace_marginal_ray(surfaces, system, ϵ)
+    @test real_marginal_ray.y[begin+stop] ≈ a[stop] atol = ϵ
     # fitting order and relative error are arbitrary at the moment
     B1 = SA(TSA(surfaces, system)..., 9)[1]
     @test abs(B1 / W040 - 1) < 0.05
