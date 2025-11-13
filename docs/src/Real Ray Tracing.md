@@ -20,7 +20,7 @@ trace_marginal_ray(surfaces, system)
 
 In addition, the amount of spherical aberration produced from a real ray trace can be quantifed.
 
-The following computes the transverse ray errors and returns a vector with the ray heights at the entrance pupil and the ray errors at the paraxial plane.
+The following computes the transverse ray errors and returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.
 
 ```@example real_ray_tracing
 y, ε = TSA(surfaces, system)
