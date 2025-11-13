@@ -260,9 +260,10 @@ function trace_chief_ray(surfaces, system::System, ϵ = sqrt(eps()))
     u = [-reverse(ray.u); -ray.u[1]]
     yu = [y u]
     n = surfaces[:,3]
-    ray.z[end] = ray.z[end-1] - y[end-1] / tan(u[end-1])
-    pushfirst!(ray.z, -y[2] / tan(u[1]))
-    return RealRay{Chief}(y, u, yu, n, ray.z)
+    z = ray.z[end] .- reverse(ray.z)
+    z[1] = -y[2] / tan(u[1])
+    push!(z, z[end] - y[end-1] / tan(u[end-1]))
+    return RealRay{Chief}(y, u, yu, n, z)
 end
 
 function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
