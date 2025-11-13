@@ -21,7 +21,8 @@ const branch = get(ENV, "GITHUB_REF_NAME", "")
 
 const pages = [
     "index.md",
-    "Ray Tracing.md",
+    "Paraxial Ray Tracing.md",
+    "Real Ray Tracing.md",
     "Vignetting Analysis.md",
     "Seidel Aberrations.md",
 ]

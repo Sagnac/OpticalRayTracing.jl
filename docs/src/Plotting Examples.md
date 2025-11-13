@@ -25,10 +25,13 @@ rays = raytrace(system, -24.0, -1.5 * system.f)
 fig = rayplot(rays)
 rays = raytrace(system, 24.0, -1.5 * system.f)
 rayplot!(rays)
+
+caustic(surfaces, system; theme, surface_color)
 ```
 
 ![rayplot](assets/images/rayplot.png)
 ![rays](assets/images/rays.png)
+![caustic](assets/images/caustic.png)
 
 ## Aberration Plots
 
@@ -44,8 +47,9 @@ percent_distortion(W, system)
 spot_size(W, system)
 ```
 
-![wavefan](assets/images/wavefan.png)
-![rayfan](assets/images/rayfan.png)
-![field_curves](assets/images/field_curves.png)
-![percent_distortion](assets/images/percent_distortion.png)
+|    |    |
+|----|----|
+|![wavefan](assets/images/wavefan.png)|![rayfan](assets/images/rayfan.png)|
+|![field_curves](assets/images/field_curves.png)|![percent_distortion](assets/images/percent_distortion.png)|
+
 ![spot_size](assets/images/spot_size.png)

@@ -1,4 +1,4 @@
-# General Ray Tracing
+# Paraxial Ray Tracing
 
 The `raytrace` function provides methods for tracing over a given system or lens while the `transfer` function provides convenience methods for working with transfer matrices.
 

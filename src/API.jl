@@ -45,6 +45,15 @@ The coefficients assume a positive valued field.
 aberrations
 
 """
+    caustic(surfaces, system, [k_rays::Int]; [theme], kwargs...)
+
+Traces real rays and plots the caustic extended to either the paraxial or marginal focus. Requires using a `Makie` backend. `k_rays` controls how many rays are plotted.
+
+See also: [`solve`](@ref), [`raytrace`](@ref), [`trace_marginal_ray`](@ref).
+"""
+caustic
+
+"""
     compute_surfaces(lens::Lens)
 
 Compute the surface matrix from a given `Lens`.
@@ -149,9 +158,17 @@ If a set of aperture semi-diameters `a` is specified and `clip = true` any block
 
     raytrace(system::System, ȳ, s)
 
-Trace the marginal and chief ray through a given system for a given object height and distance from the objective; these are signed quantities.
+Trace the paraxial marginal and chief ray through a given system for a given object height and distance from the objective; these are signed quantities.
 
 See also: [`solve`](@ref), [`incidences`](@ref).
+
+----
+
+    raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
+
+Trace a real ray through the surfaces with initial height `y` and initial angle `U`.
+
+See also: [`trace_marginal_ray`](@ref).
 """
 raytrace
 
@@ -163,6 +180,22 @@ Transfer an input `[y, nu]` vector in the reverse direction, extending by image 
 See also: [`transfer`](@ref).
 """
 reverse_transfer
+
+"""
+    SA(y::Vector, ε::Vector, degree::Int)
+
+Fits spherical aberration transverse ray errors to a polynomial of the given `degree` using linear least squares. `y` & `ε` are the EP heights and ray errors returned by [`TSA`](@ref). The returned vector corresponds to the coefficients for a tangential ray aberration expansion of the form: `ε = By³ + Cy⁵ + Dy⁷ …`
+"""
+SA
+
+"""
+    TSA(surfaces, system, [k_rays::Int])
+
+Computes the transverse ray aberration errors for spherical aberration using a real ray trace. `k_rays` controls how many rays are plotted. Returns a vector with the ray heights at the entrance pupil and the ray errors at the paraxial plane.
+
+See also: [`SA`](@ref), [`caustic`](@ref), [`raytrace`](@ref).
+"""
+TSA
 
 """
     scale!(M::Lens)
@@ -211,6 +244,21 @@ Plot the spot diagram over the image plane using third order aberration data. Re
 See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref).
 """
 spot_size
+
+"""
+    trace_marginal_ray(lens::Lens, a, [ω = 0.0])
+
+Find the paraxial marginal ray for the given lens and aperture sizes.
+
+----
+
+    trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
+
+Find the real marginal ray for the given surfaces and system.
+
+See also: [`raytrace`](@ref).
+"""
+trace_marginal_ray
 
 """
     transfer(M::TransferMatrix, v::Vector, τ, τ′)
