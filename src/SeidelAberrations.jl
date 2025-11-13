@@ -122,17 +122,22 @@ end
 function TSA(surfaces::AbstractMatrix, system::System, k_rays::Int = k_rays)
     paraxial_marginal = system.marginal
     real_marginal = trace_marginal_ray(surfaces, system)
-    y = range(real_marginal.y[1] / k_rays, real_marginal.y[1], k_rays)
+    real_chief = trace_chief_ray(surfaces, system)
+    XP_t = real_chief.z[end] - real_chief.z[end-1]
+    y_EP = range(real_marginal.y[1] / k_rays, real_marginal.y[1], k_rays)
+    y_XP = Vector{Float64}(undef, k_rays)
     ε = Vector{Float64}(undef, k_rays)
     paraxial_BFD = paraxial_marginal.z[end] - paraxial_marginal.z[end-1]
     t = surface_to_focus(paraxial_BFD, real_marginal, paraxial_marginal)
+    y_XP[end] = transfer(real_marginal.y[end-1], real_marginal.u[end], XP_t, RealRay)
     ε[end] = transfer(real_marginal, t)
-    for (i, yi) in enumerate(Base.Iterators.take(y, k_rays - 1))
-        ray = raytrace(surfaces, yi, 0.0, RealRay)
+    for (i, y) in enumerate(Base.Iterators.take(y_EP, k_rays - 1))
+        ray = raytrace(surfaces, y, 0.0, RealRay)
         t = surface_to_focus(paraxial_BFD, ray)
+        y_XP[i] = transfer(ray.y[end], ray.u[end], XP_t, RealRay)
         ε[i] = transfer(ray, t)
     end
-    return collect(y), ε
+    return y_XP, ε
 end
 
 function SA(y::Vector, ε::Vector, degree::Int)

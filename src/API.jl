@@ -184,14 +184,14 @@ reverse_transfer
 """
     SA(y::Vector, ε::Vector, degree::Int)
 
-Fits spherical aberration transverse ray errors to a polynomial of the given `degree` using linear least squares. `y` & `ε` are the EP heights and ray errors returned by [`TSA`](@ref). The returned vector corresponds to the coefficients for a tangential ray aberration expansion of the form: `ε = By³ + Cy⁵ + Dy⁷ …`
+Fits spherical aberration transverse ray errors to a polynomial of the given `degree` using linear least squares. `y` & `ε` are the XP heights and ray errors returned by [`TSA`](@ref). The returned vector corresponds to the coefficients for a tangential ray aberration expansion of the form: `ε = By³ + Cy⁵ + Dy⁷ …`
 """
 SA
 
 """
     TSA(surfaces, system, [k_rays::Int])
 
-Computes the transverse ray aberration errors for spherical aberration using a real ray trace. `k_rays` controls how many rays are plotted. Returns a vector with the ray heights at the entrance pupil and the ray errors at the paraxial plane.
+Computes the transverse ray aberration errors for spherical aberration using a real ray trace. `k_rays` controls how many rays are plotted. Returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.
 
 See also: [`SA`](@ref), [`caustic`](@ref), [`raytrace`](@ref).
 """
