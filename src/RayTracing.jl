@@ -191,7 +191,7 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     return ParaxialRay{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
-function trace_marginal_ray(surfaces, system::System, ϵ = sqrt(eps()))
+function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
     (; marginal, a, stop) = system
     y1 = marginal.y[1]
     ray = raytrace(surfaces, y1, 0.0, RealRay)
@@ -203,7 +203,7 @@ function trace_marginal_ray(surfaces, system::System, ϵ = sqrt(eps()))
         ray = raytrace(surfaces, y2, 0.0, RealRay)
         y2 -= d
     end
-    while abs(y2 - y1) > ϵ
+    while abs(y2 - y1) > atol
         y = (y1 + y2) / 2
         ray = raytrace(surfaces, y, 0.0, RealRay)
         if sign(Δy_stop(ray, stop, a_stop)) == σ

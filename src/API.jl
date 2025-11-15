@@ -252,7 +252,7 @@ Find the paraxial marginal ray for the given lens and aperture sizes.
 
 ----
 
-    trace_marginal_ray(surfaces, system::System, ϵ = sqrt(eps()))
+    trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
 
 Find the real marginal ray for the given surfaces and system.
 
