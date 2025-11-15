@@ -60,13 +60,14 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
-function sag(y, U, R)
+function sag(y, U, R, K)
     if isfinite(R)
-        α = cos(U) ^ 2
-        β = R - y * tan(U)
-        Δ = β ^ 2 - y ^ 2 / α
+        γ = 1 + K
+        α = γ * tan(U) ^ 2 + 1
+        β = R - y * tan(U) * γ
+        Δ = β ^ 2 - y ^ 2 * γ * α
         if Δ ≥ 0.0
-            return α * (β - sign(R) * sqrt(Δ))
+            return (β - sign(R) * sqrt(Δ)) / α
         else
             return NaN # misses surface
         end
@@ -123,7 +124,8 @@ function raytrace(lens::Lens, y, ω,
     return ParaxialRay{Tangential}(rt, τ, n)
 end
 
-function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
+function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
+                  K = zeros(size(surfaces, 1)))
     R, t, n = eachcol(surfaces)
     ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
@@ -132,7 +134,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
     for i = 1:size(surfaces, 1)-1
         y += tan(U) * ts[i]
         Rs = R[i+1]
-        s = sag(y, U, Rs)
+        s = sag(y, U, Rs, K[i+1])
         # transfer across surface sagitta
         y += s * tan(U)
         # update distances
@@ -145,6 +147,10 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
         rt[i+1,2] = U
     end
     return RealRay{Tangential}(rt, ts, n)
+end
+
+function raytrace(surfaces::Prescription, y, U, ::Type{RealRay})
+    raytrace(surfaces, y, U, RealRay; K = surfaces.K)
 end
 
 function raytrace(surfaces::AbstractMatrix, y, ω,

@@ -336,7 +336,7 @@ function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, <:AbstractVector, Int,
 end
 
 # plots the caustic
-function plot!(p::RayTracePlot{Tuple{<:AbstractMatrix, System, Int}})
+function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, System, Int}})
     surfaces, system, k_rays = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
     color = attr.ray_colors[][1]

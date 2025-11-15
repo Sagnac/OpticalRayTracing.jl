@@ -68,9 +68,16 @@ end
     R::Vector{Float64}
     t::Vector{Float64}
     n::Vector{Float64}
+    K::Vector{Float64} = Float64[] # conic constant
     Prescription(M) = new(M, eachcol(M)...)
-    Prescription(R, t, n) = new([R t n], R, t, n)
-    Prescription(M, R, t, n) = Prescription(R, t, n)
+    Prescription(R, t, n) = new([R t n], R, t, n, zeros(length(R)))
+    function Prescription(R, t, n, K)
+        if isempty(K)
+            K = zeros(length(R))
+        end
+        new([R t n K], R, t, n, K)
+    end
+    Prescription(M, R, t, n, K) = Prescription(R, t, n, K)
 end
 
 struct Pupil
