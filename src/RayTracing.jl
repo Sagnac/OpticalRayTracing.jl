@@ -84,7 +84,7 @@ end
 
 surface_to_focus(BFD, x...) = BFD - sag(x...)
 
-function transfer(ray::RealRay{Marginal}, t)
+function transfer(ray::RealRay{<:FundamentalRay}, t)
     transfer(ray.y[end-1], ray.u[end-1], t, RealRay)
 end
 

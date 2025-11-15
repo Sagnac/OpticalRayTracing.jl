@@ -1,6 +1,6 @@
 using Test
 using OpticalRayTracing
-using OpticalRayTracing: λ, surface_ray
+using OpticalRayTracing: λ, surface_ray, surface_to_focus
 
 # Verification is done using an example found in the book:
 # Modern Optical Engineering, fourth edition, by Warren J. Smith
@@ -265,11 +265,20 @@ end
     @test δ_θ < ϵ_θ
     @test δ_y < ϵ_y
     atol = sqrt(eps())
-    real_marginal_ray = trace_marginal_ray(surfaces, system; atol)
-    @test real_marginal_ray.y[begin+stop] ≈ a[stop] atol = atol
+    real_marginal = trace_marginal_ray(surfaces, system; atol)
+    @test real_marginal.y[begin+stop] ≈ a[stop] atol = atol
+    rt = raytrace(surfaces, real_marginal.y[1], real_marginal.u[1], RealRay)
+    @test rt.yu[2:end,:] ≈ @view(real_marginal.yu[2:end-1,:]) atol = atol
     # fitting order and relative error are arbitrary at the moment
     B1 = SA(TSA(surfaces, system)..., 9)[1]
     @test abs(B1 / W040 - 1) < 0.05
+    real_chief = trace_chief_ray(surfaces, system; atol)
+    @test abs(real_chief.y[begin+stop]) < atol
+    t = surface_to_focus(EBFD, real_chief, marginal)
+    @test transfer(real_chief, t) ≈ chief.y[end]
+    y_vertex = real_chief.y[2] - tan(real_chief.u[1]) * real_chief.z[2]
+    rt = raytrace(surfaces, y_vertex, real_chief.u[1], RealRay)
+    @test rt.yu[2:end,:] ≈ @view(real_chief.yu[2:end-1,:]) atol = atol
 end
 
 const ray_scale = 1e-3
