@@ -355,7 +355,7 @@ function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Int}})
         # this retraces the marginal to avoid manipulating it specifically
         # as the ray already contains image & object space extensions
         ray = raytrace(surfaces, yi, 0.0, RealRay)
-        if marginal_focus < z[end]
+        if abs(marginal_focus) < abs(z[end])
             # extend rays out to the paraxial image plane
             # for negative longitudinal spherical aberration
             zf = z[end]
