@@ -205,7 +205,7 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
     )
     p = range(0.0, 100.0, k)
     H = range(0.0, 1.0, k)
-    pd = @. W311 * λ / n′u′ * H ^ 3 / ȳ * 100.0
+    pd = @. W311 * λ / n′u′ * H ^ 2 / ȳ * 100.0
     lines!(axis, pd, H; kwargs...)
     DataInspector(fig)
     return fig
