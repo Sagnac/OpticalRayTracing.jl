@@ -63,10 +63,10 @@ end
 function sag(y, U, R)
     if isfinite(R)
         α = cos(U) ^ 2
-        β = y * tan(U) - R
+        β = R - y * tan(U)
         Δ = β ^ 2 - y ^ 2 / α
         if Δ ≥ 0.0
-            return α * (-β - sign(R) * sqrt(Δ))
+            return α * (β - sign(R) * sqrt(Δ))
         else
             return NaN # misses surface
         end
@@ -137,7 +137,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
         ts[i+1] -= s
         θ = asin(y / Rs)
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
-        U = sin_i′ ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
+        U = abs(sin_i′) ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y
         rt[i+1,2] = U
     end
