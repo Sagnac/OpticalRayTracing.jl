@@ -94,7 +94,10 @@ end
 
 transfer(y, u, t, ::Type{RealRay}) = y + tan(u) * t
 
-Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
+function stop_loss(surfaces, y, u, stop, a_stop)
+    ray = raytrace(surfaces, y, u, RealRay)
+    return ray, ray.y[begin+stop] - a_stop
+end
 
 function Δy_stop(surfaces, ȳ′, ū′, t, stop)
     ȳ′ = transfer(ȳ′, ū′, t, RealRay)
@@ -194,24 +197,15 @@ end
 
 function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
     (; marginal, a, stop) = system
-    y1 = marginal.y[1]
-    ray = raytrace(surfaces, y1, 0.0, RealRay)
+    y = marginal.y[1]
+    u = 0.0
     a_stop = system.a[stop]
-    σ = sign(Δy_stop(ray, stop, a_stop))
-    d = σ * 0.1 * y1
-    y2 = y1 - d
-    while sign(Δy_stop(ray, stop, a_stop)) == σ
-        ray = raytrace(surfaces, y2, 0.0, RealRay)
-        y2 -= d
-    end
-    while abs(y2 - y1) > atol
-        y = (y1 + y2) / 2
-        ray = raytrace(surfaces, y, 0.0, RealRay)
-        if sign(Δy_stop(ray, stop, a_stop)) == σ
-            y1 = y
-        else
-            y2 = y
-        end
+    ray, Δy_stop = stop_loss(surfaces, y, u, stop, a_stop)
+    ϵ = sqrt(eps())
+    while abs(Δy_stop) > atol
+        δy = stop_loss(surfaces, y + ϵ, u, stop, a_stop)[2]
+        y -= Δy_stop * ϵ / (δy - Δy_stop)
+        ray, Δy_stop = stop_loss(surfaces, y, u, stop, a_stop)
     end
     ray.z[end] = ray.z[end-1] - ray.y[end] / tan(ray.u[end])
     pushfirst!(ray.z, -(extrema(ray.z)...) * 0.1)
