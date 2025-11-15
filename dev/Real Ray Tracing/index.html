@@ -4,28 +4,28 @@ U = 0.05
 raytrace(surfaces, y, U, RealRay)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RealRay{Tangential}.yu:
 9×2 Matrix{Float64}:
  7.0       0.05
- 7.07915  -0.147882
- 6.80107  -0.255697
- 6.43567  -0.0830189
- 6.20845   0.126537
- 6.34532   0.126537
- 6.46045   0.0835461
- 6.74144   0.0545595
- 6.83576  -0.0945976</code></pre><p>And this finds the real marginal ray for the given surfaces and system.</p><pre><code class="language-julia hljs">trace_marginal_ray(surfaces, system)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RealRay{Marginal}.yu:
+ 7.0811   -0.147939
+ 6.8031   -0.255796
+ 6.4454   -0.0829576
+ 6.22165   0.127341
+ 6.35867   0.127341
+ 6.47454   0.084075
+ 6.76106   0.0549685
+ 6.85625  -0.0945211</code></pre><p>And this finds the real marginal ray for the given surfaces and system.</p><pre><code class="language-julia hljs">trace_marginal_ray(surfaces, system)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">RealRay{Marginal}.yu:
 10×2 Matrix{Float64}:
- 8.81603   0.0
- 8.81603  -0.229565
- 8.61914  -0.397344
- 8.14056  -0.140802
- 7.58934   0.0998726
- 7.63      0.0998726
- 7.72069   0.0659783
- 7.97536   0.0330548
- 8.00298  -0.168561
- 0.0      -0.168561</code></pre><p>In addition, the amount of spherical aberration produced from a real ray trace can be quantifed.</p><p>The following computes the transverse ray errors and returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.</p><pre><code class="language-julia hljs">y, ε = TSA(surfaces, system)
-ε[end]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.2711040715953352</code></pre><p>These can then be used to approximate, using linear least squares, the coefficients to a tangential ray aberration expansion of the form:</p><p><code>ε = By³ + Cy⁵ + Dy⁷ …</code></p><pre><code class="language-julia hljs">degree = 9
+ 8.75271   0.0
+ 8.75271  -0.227507
+ 8.54797  -0.393639
+ 8.1085   -0.139238
+ 7.58814   0.10265
+ 7.63      0.10265
+ 7.72323   0.0678096
+ 7.98883   0.0346842
+ 8.01798  -0.166199
+ 0.0      -0.166199</code></pre><p>In addition, the amount of spherical aberration produced from a real ray trace can be quantifed.</p><p>The following computes the transverse ray errors and returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.</p><pre><code class="language-julia hljs">y, ε = TSA(surfaces, system)
+ε[end]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.395602697224116</code></pre><p>These can then be used to approximate, using linear least squares, the coefficients to a tangential ray aberration expansion of the form:</p><p><code>ε = By³ + Cy⁵ + Dy⁷ …</code></p><pre><code class="language-julia hljs">degree = 9
 SA(y, ε, degree)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
- -0.2352253440706555
-  0.34712863154053075
- -0.02715003127153205
-  0.18623591647883408</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Paraxial Ray Tracing/">« Paraxial Ray Tracing</a><a class="docs-footer-nextpage" href="../Vignetting Analysis/">Vignetting Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.15.0 on <span class="colophon-date" title="Thursday 13 November 2025 22:34">Thursday 13 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ -0.23579386695577872
+  0.4240365260408245
+  0.002631352889386751
+  0.20461203720153723</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Paraxial Ray Tracing/">« Paraxial Ray Tracing</a><a class="docs-footer-nextpage" href="../Vignetting Analysis/">Vignetting Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.0 on <span class="colophon-date" title="Saturday 15 November 2025 02:28">Saturday 15 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
