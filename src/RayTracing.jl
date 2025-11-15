@@ -60,11 +60,13 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
-function sag(y, R)
+function sag(y, U, R)
     if isfinite(R)
-        x = R ^ 2 - y ^ 2
-        if x ≥ 0.0
-            return R - sign(R) * sqrt(x)
+        α = cos(U) ^ 2
+        β = R - y * tan(U)
+        Δ = β ^ 2 - y ^ 2 / α
+        if Δ ≥ 0.0
+            return α * (β - sign(R) * sqrt(Δ))
         else
             return NaN # misses surface
         end
@@ -76,7 +78,7 @@ end
 # z-coordinate end-point is vertex position
 sag(ray::RealRay{Tangential}) = ray.z[end-1] - ray.z[end]
 
-function sag(real::RealRay{Marginal}, paraxial::ParaxialRay{Marginal})
+function sag(real::RealRay, paraxial::ParaxialRay{Marginal})
     real.z[end-1] - paraxial.z[end-1]
 end
 
@@ -125,18 +127,17 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay})
     rt[1,:] .= y, U
     s = 0.0
     for i = 1:size(surfaces, 1)-1
-        y = y + tan(U) * ts[i]
+        y += tan(U) * ts[i]
         Rs = R[i+1]
-        s = sag(y, Rs)
+        s = sag(y, U, Rs)
         # transfer across surface sagitta
         y += s * tan(U)
-        # recompute sagitta at new height and update distances
-        s = sag(y, Rs)
+        # update distances
         ts[i] += s
         ts[i+1] -= s
         θ = asin(y / Rs)
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
-        U = sin_i′ ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
+        U = abs(sin_i′) ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y
         rt[i+1,2] = U
     end
