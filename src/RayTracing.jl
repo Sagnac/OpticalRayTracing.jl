@@ -94,9 +94,12 @@ end
 
 transfer(y, u, t, ::Type{RealRay}) = y + tan(u) * t
 
-Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
+function stop_loss(surfaces, y, u, stop, a_stop, ::Type{Marginal})
+    ray = raytrace(surfaces, y, u, RealRay)
+    return ray, ray.y[begin+stop] - a_stop
+end
 
-function Δy_stop(surfaces, ȳ′, ū′, t, stop)
+function stop_loss(surfaces, ȳ′, ū′, t, stop, ::Type{Chief})
     ȳ′ = transfer(ȳ′, ū′, t, RealRay)
     ray = raytrace(surfaces, ȳ′, ū′, RealRay)
     return ray, ray.y[begin+stop]
@@ -194,24 +197,15 @@ end
 
 function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
     (; marginal, a, stop) = system
-    y1 = marginal.y[1]
-    ray = raytrace(surfaces, y1, 0.0, RealRay)
+    y = marginal.y[1]
+    u = 0.0
     a_stop = system.a[stop]
-    σ = sign(Δy_stop(ray, stop, a_stop))
-    d = σ * 0.1 * y1
-    y2 = y1 - d
-    while sign(Δy_stop(ray, stop, a_stop)) == σ
-        ray = raytrace(surfaces, y2, 0.0, RealRay)
-        y2 -= d
-    end
-    while abs(y2 - y1) > atol
-        y = (y1 + y2) / 2
-        ray = raytrace(surfaces, y, 0.0, RealRay)
-        if sign(Δy_stop(ray, stop, a_stop)) == σ
-            y1 = y
-        else
-            y2 = y
-        end
+    ray, Δy_stop = stop_loss(surfaces, y, u, stop, a_stop, Marginal)
+    ϵ = sqrt(eps())
+    while abs(Δy_stop) > atol
+        δy = stop_loss(surfaces, y + ϵ, u, stop, a_stop, Marginal)[2]
+        y -= Δy_stop * ϵ / (δy - Δy_stop)
+        ray, Δy_stop = stop_loss(surfaces, y, u, stop, a_stop, Marginal)
     end
     ray.z[end] = ray.z[end-1] - ray.y[end] / tan(ray.u[end])
     pushfirst!(ray.z, -(extrema(ray.z)...) * 0.1)
@@ -250,12 +244,12 @@ function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
     ȳ′ = chief.y[end]
     ū′ = -chief.u[end]
     t = marginal.z[end] - marginal.z[end-1]
-    ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+    ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, t, stop, Chief)
     ϵ = sqrt(eps())
     while abs(y_stop) > atol
-        δy = Δy_stop(rev_surfaces, ȳ′, ū′ + ϵ, t, stop)[2]
+        δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, t, stop, Chief)[2]
         ū′ -= y_stop * ϵ / (δy - y_stop)
-        ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
+        ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, t, stop, Chief)
     end
     ȳ = [0.0; reverse(ray.y)]
     ȳ[end] = ȳ′
