@@ -322,7 +322,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
     n_1 = n[1]
     for i = 1:length(z_corners)-1
         n_i = n[i+1]
-        n_i == n_1 && continue
+        abs(n_i) == abs(n_1) && continue
         z1, z2 = z_edge = @view z_corners[i:i+1]
         y1, y2 = y_edge = @view y_corners[i:i+1]
         z_min = z_edge[argmin(y_edge)]
