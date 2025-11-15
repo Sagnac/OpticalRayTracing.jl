@@ -240,7 +240,7 @@ function trace_chief_ray(lens::Lens, stop::Int,
     return ParaxialRay{Chief}(chief_ray, τ, n)
 end
 
-function trace_chief_ray(surfaces, system::System, ϵ = sqrt(eps()))
+function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
     R = -surfaces[end:-1:2, 1]
     t = @view surfaces[end:-1:1, 2]
     n = @view surfaces[end:-1:1, 3]
@@ -251,7 +251,8 @@ function trace_chief_ray(surfaces, system::System, ϵ = sqrt(eps()))
     ū′ = -chief.u[end]
     t = marginal.z[end] - marginal.z[end-1]
     ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
-    while abs(y_stop) > ϵ
+    ϵ = sqrt(eps())
+    while abs(y_stop) > atol
         δy = Δy_stop(rev_surfaces, ȳ′, ū′ + ϵ, t, stop)[2]
         ū′ -= y_stop * ϵ / (δy - y_stop)
         ray, y_stop = Δy_stop(rev_surfaces, ȳ′, ū′, t, stop)
