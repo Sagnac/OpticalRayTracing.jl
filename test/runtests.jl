@@ -222,6 +222,9 @@ const ρ =  h′ ^ 2 / 2longitudinal_petzval
     @test aberr.W020 ≈ (α * W020 / 4) atol = wave_scale
     @test aberr.W111 ≈ (α * W111 / 2) atol = wave_scale
     @test ρ / f ≈ PTZ_F atol = system_scale
+    # Petzval curvature
+    PTZC = -sum(@views(system.lens[:,2] ./ system.lens.n[begin+1:end])) / λ
+    @test inv(ρ) / λ ≈ PTZC atol = wave_scale
 end
 
 @testset "transfer matrix" begin
