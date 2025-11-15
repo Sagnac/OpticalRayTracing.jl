@@ -95,7 +95,7 @@ transfer(y, u, t, ::Type{RealRay}) = y + tan(u) * t
 Δy_stop(ray, stop, a_stop) = ray.y[begin+stop] - a_stop
 
 function Δy_stop(surfaces, ȳ′, ū′, t, stop)
-    ȳ′ = transfer(ȳ′, ū′, t)
+    ȳ′ = transfer(ȳ′, ū′, t, RealRay)
     ray = raytrace(surfaces, ȳ′, ū′, RealRay)
     return ray, ray.y[begin+stop]
 end
