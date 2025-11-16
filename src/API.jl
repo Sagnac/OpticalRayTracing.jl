@@ -246,9 +246,28 @@ See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref)
 spot_size
 
 """
+    trace_chief_ray(lens::Lens, stop::Int, marginal::ParaxialRay{Marginal}, h′)
+
+Find the paraxial chief ray for the given lens.
+
+See also: [`solve`](@ref).
+
+----
+
+    trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
+
+Find the real chief ray for the given surfaces and system.
+
+See also: [`trace_marginal_ray`](@ref), [`raytrace`](@ref).
+"""
+trace_chief_ray
+
+"""
     trace_marginal_ray(lens::Lens, a, [ω = 0.0])
 
 Find the paraxial marginal ray for the given lens and aperture sizes.
+
+See also: [`solve`](@ref).
 
 ----
 
@@ -256,7 +275,7 @@ Find the paraxial marginal ray for the given lens and aperture sizes.
 
 Find the real marginal ray for the given surfaces and system.
 
-See also: [`raytrace`](@ref).
+See also: [`trace_chief_ray`](@ref), [`raytrace`](@ref).
 """
 trace_marginal_ray
 

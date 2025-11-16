@@ -15,18 +15,20 @@ Using the mutating `rayplot!` version will draw on top of the current figure.
 ```julia
 using GLMakie
 
-theme = theme_black()
 surface_color = :white
 ray_colors = (:cyan, :red)
 
-rayplot(surfaces, system; theme, surface_color, ray_colors)
+rayplot(surfaces, system; theme = theme_black(), surface_color, ray_colors)
 
 rays = raytrace(system, -24.0, -1.5 * system.f)
 fig = rayplot(rays)
 rays = raytrace(system, 24.0, -1.5 * system.f)
 rayplot!(rays)
 
-caustic(surfaces, system; theme, surface_color)
+surface = [Inf 0.0 1.0; -100.0 0.0 -1.0]
+system = solve(surface, fill(30.0, 2), 21.0)
+# traces real rays
+fig = caustic(surface, system; theme = theme_black(), surface_color)
 ```
 
 ![rayplot](assets/images/rayplot.png)
