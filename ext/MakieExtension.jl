@@ -378,7 +378,7 @@ function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, System, Int}})
         lines!(p, attr, [ray.z[end-1], zf], [-ray.y[end], -yf]; color)
     end
     # optical axis
-    lines!(p, attr, [z[1], z[end]], [0.0, 0.0]; color = surface_color)
+    lines!(p, attr, collect(extrema(z)), [0.0, 0.0]; color = surface_color)
     DataInspector(textcolor = :black)
     return p
 end
