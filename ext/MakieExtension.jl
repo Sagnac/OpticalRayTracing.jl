@@ -281,7 +281,7 @@ function plot!(p::RayTracePlot{Tuple{T, Vector{T}}}) where T <: Vector{Float64}
 end
 
 # plots lens surfaces + rays
-function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
+function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, <:AbstractVector, Int,
                                T, Vector{T}}}) where T <: Vector{Float64}
     surfaces, a, stop, z, y = p.arg1[], p.arg2[], p.arg3[], p.arg4[], p.arg5[]
     attr = p.attributes
@@ -291,7 +291,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
 end
 
 # plots lens surfaces
-function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
+function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, <:AbstractVector, Int,
                                Vector{Float64}}})
     surfaces, a, stop, z = p.arg1[], p.arg2[], p.arg3[], p.arg4[]
     attr = p.attributes
@@ -336,7 +336,7 @@ function plot!(p::RayTracePlot{<:Tuple{Matrix{Float64}, <:AbstractVector, Int,
 end
 
 # plots the caustic
-function plot!(p::RayTracePlot{Tuple{Matrix{Float64}, System, Int}})
+function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, System, Int}})
     surfaces, system, k_rays = p.arg1[], p.arg2[], p.arg3[]
     attr = p.attributes
     color = attr.ray_colors[][1]
