@@ -4,6 +4,7 @@ authors = ["Sagnac"]
 version = "0.6.0"
 
 [deps]
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [weakdeps]
@@ -14,6 +15,7 @@ MakieExtension = "Makie"
 
 [compat]
 Makie = "0.24"
+Optim = "1.13.2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

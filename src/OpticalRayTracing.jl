@@ -37,13 +37,15 @@ export TransferMatrix,
        Prescription,
        Vignetting,
        TSA,
-       SA
+       SA,
+       optimize
 
 include("Types.jl")
 include("RayTracing.jl")
 include("TransferMatrix.jl")
 include("Vignetting.jl")
 include("SeidelAberrations.jl")
+include("Optimization.jl")
 include("BaseMethods.jl")
 include("RayPlot.jl")
 include("API.jl")
