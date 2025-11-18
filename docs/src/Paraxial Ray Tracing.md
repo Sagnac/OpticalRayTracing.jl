@@ -26,7 +26,10 @@ raytrace(lens, y, nu)
 h = 10.0
 # signed object distance from vertex
 s = -100.0
+nothing # hide
+```
 
+```@repl ray_tracing
 raytrace(system, h, s)
 ```
 

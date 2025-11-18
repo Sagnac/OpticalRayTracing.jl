@@ -25,6 +25,7 @@ const pages = [
     "Real Ray Tracing.md",
     "Vignetting Analysis.md",
     "Seidel Aberrations.md",
+    "Optimization.md",
 ]
 
 end # module MakeDocs

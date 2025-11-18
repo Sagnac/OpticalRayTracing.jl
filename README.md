@@ -4,7 +4,7 @@
 
 Ray tracing, optical system solving, and aberration analysis.
 
-![rayplot](docs/src/assets/images/rayplot.png)
+<img src="docs/src/assets/images/rayplot.png" width="600">
 
 ----
 

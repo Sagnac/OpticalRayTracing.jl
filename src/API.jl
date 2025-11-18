@@ -3,7 +3,7 @@
 
 Construct a lens from a 3 column surface matrix where the first column corresponds to the radii of curvature, the second column to the thicknesses, and the third to the refractive indices.
 
-The computed result wraps a two column lens matrix where the first column refers to the reduced thickness `τ = t /n` of the distance prior to the surface and the second column refers to the surface power.
+The computed result wraps a two column lens matrix where the first column refers to the reduced thickness `τ = t / n` of the distance prior to the surface and the second column refers to the surface power.
 
 ```jldoctest
 julia> Lens([
@@ -96,6 +96,15 @@ flatten
 Compute the paraxial incidence angles over the system. Returns a four column matrix with the first two columns referring to the optical angles `ni` & `nī` for the marginal & chief ray, respectively, and the last two columns referring to the physical angles `i`, `ī`.
 """
 incidences
+
+"""
+    optimize(surfaces, system, v, constraints, [aberr], [weights])
+
+Optimize an optical system such that the surface prescription over the indices `v` minimizes the weighted aberrations provided in `aberr` subject to the given `constraints`.
+
+See also: [`solve`](@ref).
+"""
+optimize
 
 """
     percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
