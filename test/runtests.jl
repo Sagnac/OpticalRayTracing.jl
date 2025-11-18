@@ -307,3 +307,25 @@ const ray_scale = 1e-3
                W131 * ρ ^ 2 * H * sin(2θ) +
                (W222 + W220P) * ρ * H ^ 2 * sin(θ) atol = ray_scale
 end
+
+const optim_scale = 0.05
+
+@testset "optimization" begin
+    n = rand() * 0.2 + 1.5
+    R1 = 100.0 * (n - 1)
+    R2 = -R1
+    t = 5.0
+    a = fill(15.0, 2)
+    surfaces = [Inf 0.0 1.0; R1 t n; R2 0.0 1.0]
+    system = solve(surfaces, a, 10.0)
+    v = 2:3
+    aberr = [:W040]
+    constraint = Dict(:f => system.f)
+    prescription, new_system = optimize(surfaces, system, v, constraint, aberr)
+    # optimal lens bending shape factor for conjugate parameter M = 1
+    X_min = 2 * (n ^ 2 - 1) / (n + 2)
+    R1, R2 = prescription[2:3]
+    X = (R2 + R1) / (R2 - R1)
+    @test X ≈ X_min rtol = optim_scale
+    @test new_system.f ≈ system.f rtol = optim_scale
+end
