@@ -10,28 +10,28 @@ aberr = [:W040, :W131, :W222]
 weights = [2.0, 2.0, 1.0]
 prescription, new_system = optimize(surfaces, system, v, constraints, aberr, weights)</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; prescription</code><code class="nohighlight hljs ansi" style="display:block;">9×3 Prescription:
    Inf      0.0    1.0
-   17.4734  3.57   1.6116
- -151.646   1.89   1.0
-  -28.8552  0.81   1.6053
-   15.774   2.345  1.0
+   16.2776  3.57   1.6116
+ -174.073   1.89   1.0
+  -30.2804  0.81   1.6053
+   14.4181  2.345  1.0
    Inf      0.905  1.0
    Inf      2.17   1.5123
-   15.9403  3.96   1.6116
-  -21.7948  0.0    1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; new_system</code><code class="nohighlight hljs ansi" style="display:block;">OpticalRayTracing.System
+   14.3682  3.96   1.6116
+  -22.3315  0.0    1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; new_system</code><code class="nohighlight hljs ansi" style="display:block;">OpticalRayTracing.System
 
-   f: 50.7884
-EBFD: 45.9956
-EFFD: -41.2501
-   N: 2.8795
- FOV: 45.8883
+   f: 50.7885
+EBFD: 45.1663
+EFFD: -41.9163
+   N: 2.8380
+ FOV: 45.8882
 stop: 5
-  EP: D = 17.6380, t = 8.7538
-  XP: D = 17.9147, t = -5.5896</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = aberrations(prescription, new_system)</code><code class="nohighlight hljs ansi" style="display:block;">OpticalRayTracing.Aberration
+  EP: D = 17.8956, t = 8.9208
+  XP: D = 17.8785, t = -5.5737</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = aberrations(prescription, new_system)</code><code class="nohighlight hljs ansi" style="display:block;">OpticalRayTracing.Aberration
 
 W040: -0.0000
-W131: 0.0002
-W222: -2.6377
-W220: 41.4857
-W311: 96.3831
+W131: 0.0000
+W222: -0.0000
+W220: 41.0199
+W311: 86.0046
 W020: 0.0000
-W111: 0.0000</code></pre><p>Note that this employs a rudimentary optimization procedure meant to provide a rough initial numerical solution; as a result the constraint values might not be met exactly.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Seidel Aberrations/">« Seidel Aberrations</a><a class="docs-footer-nextpage" href="../Plotting Examples/">Plotting Examples »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.0 on <span class="colophon-date" title="Wednesday 19 November 2025 04:55">Wednesday 19 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+W111: 0.0000</code></pre><p>Note that this employs a rudimentary optimization procedure meant to provide a rough initial numerical solution; as a result the constraint values might not be met exactly.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Seidel Aberrations/">« Seidel Aberrations</a><a class="docs-footer-nextpage" href="../Plotting Examples/">Plotting Examples »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.0 on <span class="colophon-date" title="Wednesday 19 November 2025 10:41">Wednesday 19 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
