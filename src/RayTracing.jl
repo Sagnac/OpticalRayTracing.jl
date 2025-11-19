@@ -235,21 +235,21 @@ function trace_chief_ray(lens::Lens, stop::Int,
 end
 
 function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
-    R = -surfaces[end:-1:2, 1]
-    t = @view surfaces[end:-1:1, 2]
-    n = @view surfaces[end:-1:1, 3]
-    rev_surfaces = [[Inf; R] t n]
+    rev_R = -surfaces[end:-1:2, 1]
+    rev_t = @view surfaces[end:-1:1, 2]
+    rev_n = @view surfaces[end:-1:1, 3]
+    rev_surfaces = [[Inf; rev_R] rev_t rev_n]
     (; chief, marginal) = system
-    stop = length(R) - system.stop + 1
+    stop = length(rev_R) - system.stop + 1
     ȳ′ = chief.y[end]
     ū′ = -chief.u[end]
-    t = marginal.z[end] - marginal.z[end-1]
-    ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, t, stop, Chief)
+    BFD = marginal.z[end] - marginal.z[end-1]
+    ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, BFD, stop, Chief)
     ϵ = sqrt(eps())
     while abs(y_stop) > atol
-        δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, t, stop, Chief)[2]
+        δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, BFD, stop, Chief)[2]
         ū′ -= y_stop * ϵ / (δy - y_stop)
-        ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, t, stop, Chief)
+        ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, BFD, stop, Chief)
     end
     ȳ = [0.0; reverse(ray.y)]
     ȳ[end] = ȳ′
