@@ -1,17 +1,19 @@
 import Optim
 using LinearAlgebra
 
-get_constraint(system, fields) = foldl(getfield, fields; init = system)
-
 # This employs an Augmented Lagrangian method
 # the magic numbers and arbitrary values are somewhat based on heuristics
-# scale is not yet taken into account
 function optimize(surfaces, system, v, constraints,
                   aberr = fieldnames(Aberration)[1:5], weights = ones(length(aberr)))
     (; a) = system
     h′ = system.chief.y[end]
     prescription = Prescription(copy(surfaces))
+    # normalize keys
     cts = Dict((c[1],) => c[2] for c in constraints)
+    # scale constraint violations to improve well-conditioning / stability
+    function get_constraints(system)
+        Float64[foldl(getfield, c[1]; init = system) / c[2] - 1 for c in cts]
+    end
     ∑wts = sum(weights)
     # Lagrangian multipliers
     λ = zeros(length(cts))
@@ -23,12 +25,12 @@ function optimize(surfaces, system, v, constraints,
     # toleration / patience counter for increasing multipliers
     k = 0
     # monitor constraint satisfaction
-    cᵢ =[get_constraint(system, c[1]) - c[2] for c in cts]
+    cᵢ = get_constraints(system)
     local new_system
     function update!(x)
         prescription[v] .= x
         sys = solve(prescription, a, h′)
-        c = [get_constraint(sys, c[1]) - c[2] for c in cts]
+        c = get_constraints(sys)
         return sys, c
     end
     for i = 1:24
