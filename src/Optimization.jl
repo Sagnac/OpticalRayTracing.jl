@@ -18,6 +18,7 @@ function optimize(surfaces, system, v, constraints,
         return abs.(getfield(W, i) for i in aberr)' * weights / ∑weights + p * c' * c
     end
     u0 = prescription[v]
+    u0[isinf.(u0)] .= 1e7
     result = Optim.optimize(objective, u0)
     u = Optim.minimizer(result)
     prescription[v] .= u
