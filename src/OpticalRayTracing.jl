@@ -38,6 +38,7 @@ export TransferMatrix,
        Vignetting,
        TSA,
        SA,
+       sag,
        optimize
 
 include("Types.jl")

@@ -60,6 +60,10 @@ function refract(y, ω, ϕ)
     return ω′
 end
 
+sag(y, R, ::Type{ParaxialRay}) = y ^ 2 / 2R
+
+sag(y, R, ::Type{RealRay}) = R - sign(R) * sqrt(R ^ 2 - y ^ 2)
+
 function sag(y, U, R, K)
     if isfinite(R)
         α = sec(U) ^ 2 + K
