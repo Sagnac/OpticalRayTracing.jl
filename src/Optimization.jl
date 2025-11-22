@@ -12,7 +12,13 @@ function optimize(surfaces, system, v, constraints,
     cts = Dict((c[1],) => c[2] for c in constraints)
     # scale constraint violations to improve well-conditioning / stability
     function get_constraints(system)
-        Float64[foldl(getfield, c[1]; init = system) / c[2] - 1 for c in cts]
+        cx = Vector{Float64}(undef, length(cts))
+        for (i, c) in enumerate(cts)
+            c1 = foldl(getfield, c[1]; init = system)
+            c2 = c[2]
+            cx[i] = iszero(c2) ? c1 : c1 / c2 - 1
+        end
+        return cx
     end
     ∑wts = sum(weights)
     # Lagrangian multipliers
