@@ -1,3 +1,5 @@
+const ϵ = sqrt(eps())
+
 function scale!(M::Lens)
     M[:,2] .*= 1E-3
     return M
@@ -64,13 +66,13 @@ sag(y, R, ::Type{ParaxialRay}) = y ^ 2 / 2R
 
 sag(y, R, ::Type{RealRay}) = R - sign(R) * sqrt(R ^ 2 - y ^ 2)
 
-function sag(y, U, R, K)
+function sag(y, U, R, K, p)
     if isfinite(R)
         β = R - y * tan(U)
         y2 = y ^ 2
         Δ = β ^ 2 - y2 * (sec(U) ^ 2 + K)
         if Δ ≥ 0.0
-            return y2 / (β + sign(R) * sqrt(Δ))
+            return y2 / (β + sign(R) * sqrt(Δ)) + p(y)
         else
             return NaN # misses surface
         end
@@ -87,10 +89,12 @@ function sag(real::RealRay, paraxial::ParaxialRay{Marginal})
 end
 
 # surface normal angle: arctan(ds/dy)
-tilt(y, R, K) = atan(sign(R) * y / sqrt(R ^ 2 - y ^ 2 * (1 + K)))
+tilt(y, R, K, p) = atan(sign(R) * y / sqrt(R ^ 2 - y ^ 2 * (1 + K)) + dp_dy(p, y))
 
 # equivalent to the above for spherical surfaces
 tilt(y, R) = asin(y / R)
+
+dp_dy(p, y) = imag(p(complex(y, ϵ))) / ϵ
 
 surface_to_focus(BFD, x...) = BFD - sag(x...)
 
@@ -134,7 +138,7 @@ function raytrace(lens::Lens, y, ω,
 end
 
 function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
-                  K = zeros(size(surfaces, 1)))
+                  K = zeros(size(surfaces, 1)), p = fill(zero, length(K)))
     R, t, n = eachcol(surfaces)
     ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
@@ -144,13 +148,14 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
         y += tan(U) * ts[i]
         Rs = R[i+1]
         Ks = K[i+1]
-        s = sag(y, U, Rs, Ks)
+        ps = p[i+1]
+        s = sag(y, U, Rs, Ks, ps)
         # transfer across surface sagitta
         y += s * tan(U)
         # update distances
         ts[i] += s
         ts[i+1] -= s
-        θ = iszero(Ks) ? tilt(y, Rs) : tilt(y, Rs, Ks)
+        θ = iszero(Ks) && ps ≡ zero ? tilt(y, Rs) : tilt(y, Rs, Ks, ps)
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
         U = abs(sin_i′) ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y
@@ -160,7 +165,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
 end
 
 function raytrace(surfaces::Layout{Aspheric}, y, U, ::Type{RealRay})
-    raytrace(surfaces, y, U, RealRay; K = surfaces.K)
+    raytrace(surfaces, y, U, RealRay; K = surfaces.K, p = surfaces.p)
 end
 
 function raytrace(surfaces::AbstractMatrix, y, ω,
@@ -217,7 +222,6 @@ function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
     u = 0.0
     a_stop = system.a[stop]
     ray, Δy_stop = stop_loss(surfaces, y, u, stop, a_stop, Marginal)
-    ϵ = sqrt(eps())
     while abs(Δy_stop) > atol
         δy = stop_loss(surfaces, y + ϵ, u, stop, a_stop, Marginal)[2]
         y -= Δy_stop * ϵ / (δy - Δy_stop)
@@ -261,7 +265,6 @@ function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
     ū′ = -chief.u[end]
     BFD = marginal.z[end] - marginal.z[end-1]
     ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, BFD, stop, Chief)
-    ϵ = sqrt(eps())
     while abs(y_stop) > atol
         δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, BFD, stop, Chief)[2]
         ū′ -= y_stop * ϵ / (δy - y_stop)

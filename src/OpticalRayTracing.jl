@@ -41,6 +41,7 @@ export TransferMatrix,
        sag,
        Spherical,
        Aspheric,
+       Polynomial,
        optimize
 
 include("Types.jl")

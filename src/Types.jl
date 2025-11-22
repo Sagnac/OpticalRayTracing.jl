@@ -18,6 +18,14 @@ struct Spherical <: Profile end
 
 struct Aspheric <: Profile end
 
+struct Polynomial{F <: Function}
+    f::F
+end
+
+(p::Polynomial)(x) = p.f(x)
+
+fill_poly(x) = fill(Polynomial(zero), x)
+
 struct ParaxialRay{T <: AbstractRay}
     y::Vector{Float64}
     n::Vector{Float64}
@@ -75,19 +83,28 @@ end
     t::Vector{Float64}
     n::Vector{Float64}
     K::Vector{Float64} = Float64[]
-    function Layout{T}(M, R, t, n, K) where T <: Profile
-        if isempty(K)
-            K = zeros(length(R))
-        end
-        new{T}([R t n K], R, t, n, K)
+    p::Vector{Polynomial} = Polynomial(zero)[]
+    function Layout{T}(M, R, t, n, K, p) where T <: Profile
+        isempty(K) && (K = zeros(length(R)))
+        isempty(p) && (p = fill_poly(length(R)))
+        typeof(p) <: Vector{<:Polynomial} || (p = Polynomial.(p))
+        new{T}([R t n K], R, t, n, K, p)
     end
 end
 
-Layout(M) = Layout{Spherical}(M, eachcol(M)..., zeros(size(M, 1)))
+function Layout(M)
+    x = size(M, 1)
+    K = zeros(x)
+    p = fill_poly(x)
+    Layout{Spherical}(M, eachcol(M)..., K, p)
+end
 
-Layout{Aspheric}(M) = Layout{Aspheric}(M, eachcol(M)...)
+Layout{Aspheric}(M) = Layout{Aspheric}(M, eachcol(M)..., fill_poly(size(M, 1)))
 
-Layout(R, t, n) = Layout{Spherical}([R t n], R, t, n, zeros(length(R)))
+function Layout(R, t, n)
+    x = length(R)
+    Layout{Spherical}([R t n], R, t, n, zeros(x), fill_poly(x))
+end
 
 struct Pupil
     D::Float64
