@@ -24,7 +24,7 @@ function optimize(surfaces, system, v, constraints,
     # Lagrangian multipliers
     λ = zeros(length(cts))
     # penalty
-    μ = Ref(10.0) # since closed over and mutated, this avoids Core.Box heap alloc.
+    μ = Ref{Float64}(10.0) # since closed over and mutated, this avoids Core.Box
     # init
     x0 = x = prescription[v]
     x0[isinf.(x0)] .= 1e7
