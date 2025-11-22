@@ -118,9 +118,7 @@ end
     (; y, u, nu) = rays_2f.marginal
     ȳ, ū, nū = rays_2f.chief.y, rays_2f.chief.u, rays_2f.chief.nu
     @test iszero(y[end])
-    @test u[end] ≈ -XP.D / 2XP_I
-    @test u[end] ≈ -u[1]
-    @test u[end] ≈ rays_2f.H / h
+    @test u[end] ≈ -XP.D / 2XP_I ≈ -u[1] ≈ rays_2f.H / h
     @test ȳ[end] ≈ -h
     @test ū[end] ≈ -h / XP_I
     H_v = @. nū * y - nu * ȳ
