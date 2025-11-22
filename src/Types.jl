@@ -2,6 +2,8 @@ abstract type AbstractRay end
 
 abstract type FundamentalRay <: AbstractRay end
 
+abstract type Profile end
+
 struct Tangential <: AbstractRay end
 
 struct Sagittal <: AbstractRay end
@@ -11,6 +13,10 @@ struct Skew <: AbstractRay end
 struct Marginal <: FundamentalRay end
 
 struct Chief <: FundamentalRay end
+
+struct Spherical <: Profile end
+
+struct Aspheric <: Profile end
 
 struct ParaxialRay{T <: AbstractRay}
     y::Vector{Float64}
@@ -63,22 +69,25 @@ struct Lens <: AbstractArray{Float64, 2}
     n::Vector{Float64}
 end
 
-@kwdef struct Prescription <: AbstractArray{Float64, 2}
-    M::Matrix{Float64} = Matrix{Float64}(undef, 0, 0) # surfaces
+@kwdef struct Prescription{T <: Profile} <: AbstractArray{Float64, 2}
+    M::Matrix{Float64} = Matrix{Float64}(undef, 0, 0)
     R::Vector{Float64}
     t::Vector{Float64}
     n::Vector{Float64}
-    K::Vector{Float64} = Float64[] # conic constant
-    Prescription(M) = new(M, eachcol(M)...)
-    Prescription(R, t, n) = new([R t n], R, t, n, zeros(length(R)))
-    function Prescription(R, t, n, K)
+    K::Vector{Float64} = Float64[]
+    function Prescription{T}(M, R, t, n, K) where T <: Profile
         if isempty(K)
             K = zeros(length(R))
         end
-        new([R t n K], R, t, n, K)
+        new{T}([R t n K], R, t, n, K)
     end
-    Prescription(M, R, t, n, K) = Prescription(R, t, n, K)
 end
+
+Prescription(M) = Prescription{Spherical}(M, eachcol(M)..., zeros(size(M, 1)))
+
+Prescription{Aspheric}(M) = Prescription{Aspheric}(M, eachcol(M)...)
+
+Prescription(R, t, n) = Prescription{Spherical}([R t n], R, t, n, zeros(length(R)))
 
 struct Pupil
     D::Float64

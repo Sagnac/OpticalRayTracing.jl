@@ -39,6 +39,8 @@ export TransferMatrix,
        TSA,
        SA,
        sag,
+       Spherical,
+       Aspheric,
        optimize
 
 include("Types.jl")

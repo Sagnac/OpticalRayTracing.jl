@@ -329,3 +329,15 @@ const optim_scale = 0.05
     @test X ≈ X_min rtol = optim_scale
     @test new_system.f ≈ system.f rtol = optim_scale
 end
+
+@testset "aspherics" begin
+    aspheric_surface = Prescription{Aspheric}([ # parabolic reflector
+        Inf    0.0  1.0  0.0
+        -100.0 0.0 -1.0 -1.0
+    ])
+    a = 30.0
+    aspheric_system = solve(aspheric_surface, fill(a, 2), 21.0)
+    real_marginal = trace_marginal_ray(aspheric_surface, aspheric_system)
+    # should exhibit zero spherical aberration
+    @test aspheric_system.marginal.z[end] == real_marginal.z[end] == -50.0
+end

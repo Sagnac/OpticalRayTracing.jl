@@ -66,11 +66,11 @@ sag(y, R, ::Type{RealRay}) = R - sign(R) * sqrt(R ^ 2 - y ^ 2)
 
 function sag(y, U, R, K)
     if isfinite(R)
-        α = sec(U) ^ 2 + K
         β = R - y * tan(U)
-        Δ = β ^ 2 - y ^ 2 * α
+        y2 = y ^ 2
+        Δ = β ^ 2 - y2 * (sec(U) ^ 2 + K)
         if Δ ≥ 0.0
-            return (β - sign(R) * sqrt(Δ)) / α
+            return y2 / (β + sign(R) * sqrt(Δ))
         else
             return NaN # misses surface
         end
@@ -85,6 +85,12 @@ sag(ray::RealRay{Tangential}) = ray.z[end-1] - ray.z[end]
 function sag(real::RealRay, paraxial::ParaxialRay{Marginal})
     real.z[end-1] - paraxial.z[end-1]
 end
+
+# surface normal angle: arctan(ds/dy)
+tilt(y, R, K) = atan(sign(R) * y / sqrt(R ^ 2 - y ^ 2 * (1 + K)))
+
+# equivalent to the above for spherical surfaces
+tilt(y, R) = asin(y / R)
 
 surface_to_focus(BFD, x...) = BFD - sag(x...)
 
@@ -137,13 +143,14 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
     for i = 1:size(surfaces, 1)-1
         y += tan(U) * ts[i]
         Rs = R[i+1]
-        s = sag(y, U, Rs, K[i+1])
+        Ks = K[i+1]
+        s = sag(y, U, Rs, Ks)
         # transfer across surface sagitta
         y += s * tan(U)
         # update distances
         ts[i] += s
         ts[i+1] -= s
-        θ = asin(y / Rs)
+        θ = iszero(Ks) ? tilt(y, Rs) : tilt(y, Rs, Ks)
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
         U = abs(sin_i′) ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y
@@ -152,7 +159,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
     return RealRay{Tangential}(rt, ts, n)
 end
 
-function raytrace(surfaces::Prescription, y, U, ::Type{RealRay})
+function raytrace(surfaces::Prescription{Aspheric}, y, U, ::Type{RealRay})
     raytrace(surfaces, y, U, RealRay; K = surfaces.K)
 end
 
