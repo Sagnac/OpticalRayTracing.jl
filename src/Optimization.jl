@@ -7,7 +7,7 @@ function optimize(surfaces, system, v, constraints,
                   aberr = fieldnames(Aberration)[1:5], weights = ones(length(aberr)))
     (; a) = system
     h′ = system.chief.y[end]
-    prescription = Prescription(copy(surfaces))
+    layout = Layout(copy(surfaces))
     # normalize keys
     cts = Dict((c[1],) => c[2] for c in constraints)
     # scale constraint violations to improve well-conditioning / stability
@@ -26,7 +26,7 @@ function optimize(surfaces, system, v, constraints,
     # penalty
     μ = Ref{Float64}(10.0) # since closed over and mutated, this avoids Core.Box
     # init
-    x0 = x = prescription[v]
+    x0 = x = layout[v]
     x0[isinf.(x0)] .= 1e7
     # toleration / patience counter for increasing multipliers
     k = 0
@@ -34,8 +34,8 @@ function optimize(surfaces, system, v, constraints,
     cᵢ = get_constraints(system)
     local new_system
     function update!(x)
-        prescription[v] .= x
-        sys = solve(prescription, a, h′)
+        layout[v] .= x
+        sys = solve(layout, a, h′)
         c = get_constraints(sys)
         return sys, c
     end
@@ -43,7 +43,7 @@ function optimize(surfaces, system, v, constraints,
         # Lagrangian / objective function
         function L(x)
             sys, c = update!(x)
-            W = aberrations(prescription, sys)
+            W = aberrations(layout, sys)
             Wᵢ = abs.(getfield(W, i) for i ∈ aberr)
             return Wᵢ ⋅ weights / ∑wts + 0.5 * μ[] * c ⋅ c + λ ⋅ c
         end
@@ -61,5 +61,5 @@ function optimize(surfaces, system, v, constraints,
         cᵢ = cᵢ′
         x = x0 = Optim.minimizer(result)
     end
-    return prescription, new_system
+    return layout, new_system
 end

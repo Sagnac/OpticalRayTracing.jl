@@ -1,6 +1,6 @@
 using OpticalRayTracing
 
-# Tessar lens, units in mm; prescription from Hecht's Optics
+# Tessar lens, units in mm; layout from Hecht's Optics
 surfaces = [
     # R        t        n
     Inf        0.0      1.0

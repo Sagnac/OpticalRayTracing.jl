@@ -95,7 +95,7 @@ getindex(M::TransferMatrix) = M.M
 
 getindex(M::OpticalMatrix, i::Int) = M.M[i]
 
-setindex!(M::Union{Lens, Prescription}, v, i::Int) = M.M[i] = v
+setindex!(M::Union{Lens, Layout}, v, i::Int) = M.M[i] = v
 
 size(M::OpticalMatrix) = size(M.M)
 

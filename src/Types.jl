@@ -69,13 +69,13 @@ struct Lens <: AbstractArray{Float64, 2}
     n::Vector{Float64}
 end
 
-@kwdef struct Prescription{T <: Profile} <: AbstractArray{Float64, 2}
+@kwdef struct Layout{T <: Profile} <: AbstractArray{Float64, 2}
     M::Matrix{Float64} = Matrix{Float64}(undef, 0, 0)
     R::Vector{Float64}
     t::Vector{Float64}
     n::Vector{Float64}
     K::Vector{Float64} = Float64[]
-    function Prescription{T}(M, R, t, n, K) where T <: Profile
+    function Layout{T}(M, R, t, n, K) where T <: Profile
         if isempty(K)
             K = zeros(length(R))
         end
@@ -83,11 +83,11 @@ end
     end
 end
 
-Prescription(M) = Prescription{Spherical}(M, eachcol(M)..., zeros(size(M, 1)))
+Layout(M) = Layout{Spherical}(M, eachcol(M)..., zeros(size(M, 1)))
 
-Prescription{Aspheric}(M) = Prescription{Aspheric}(M, eachcol(M)...)
+Layout{Aspheric}(M) = Layout{Aspheric}(M, eachcol(M)...)
 
-Prescription(R, t, n) = Prescription{Spherical}([R t n], R, t, n, zeros(length(R)))
+Layout(R, t, n) = Layout{Spherical}([R t n], R, t, n, zeros(length(R)))
 
 struct Pupil
     D::Float64
@@ -157,4 +157,4 @@ end
 
 const SystemOrRayBasis = Union{System, RayBasis}
 
-const OpticalMatrix = Union{Lens, Prescription, TransferMatrix}
+const OpticalMatrix = Union{Lens, Layout, TransferMatrix}

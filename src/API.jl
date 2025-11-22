@@ -100,7 +100,7 @@ incidences
 """
     optimize(surfaces, system, v, constraints, [aberr], [weights])
 
-Optimize an optical system such that the surface prescription over the indices `v` minimizes the weighted aberrations provided in `aberr` subject to the given `constraints`.
+Optimize an optical system such that the surface layout over the indices `v` minimizes the weighted aberrations provided in `aberr` subject to the given `constraints`.
 
 See also: [`solve`](@ref).
 """

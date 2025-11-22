@@ -15,7 +15,7 @@ const SF2 = 1.64769
 const dn1 = 0.010450 # SK4
 const dn2 = 0.019151 # SF2
 
-# Cooke triplet prescription
+# Cooke triplet layout
 const surfaces = [
     # R          t       n
     Inf          0.0     air; # object space
@@ -319,17 +319,17 @@ const optim_scale = 0.05
     v = 2:3
     aberr = [:W040]
     constraint = Dict(:f => system.f)
-    prescription, new_system = optimize(surfaces, system, v, constraint, aberr)
+    layout, new_system = optimize(surfaces, system, v, constraint, aberr)
     # optimal lens bending shape factor for conjugate parameter M = 1
     X_min = 2 * (n ^ 2 - 1) / (n + 2)
-    R1, R2 = prescription[2:3]
+    R1, R2 = layout[2:3]
     X = (R2 + R1) / (R2 - R1)
     @test X ≈ X_min rtol = optim_scale
     @test new_system.f ≈ system.f rtol = optim_scale
 end
 
 @testset "aspherics" begin
-    aspheric_surface = Prescription{Aspheric}([ # parabolic reflector
+    aspheric_surface = Layout{Aspheric}([ # parabolic reflector
         Inf    0.0  1.0  0.0
         -100.0 0.0 -1.0 -1.0
     ])

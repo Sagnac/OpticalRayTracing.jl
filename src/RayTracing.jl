@@ -159,7 +159,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
     return RealRay{Tangential}(rt, ts, n)
 end
 
-function raytrace(surfaces::Prescription{Aspheric}, y, U, ::Type{RealRay})
+function raytrace(surfaces::Layout{Aspheric}, y, U, ::Type{RealRay})
     raytrace(surfaces, y, U, RealRay; K = surfaces.K)
 end
 
