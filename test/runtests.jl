@@ -197,7 +197,7 @@ const wave_scale = 0.25
 
 const aberr = aberrations(surfaces, system, λ, δn)
 
-const longitudinal_petzval = 2N * aberr.W220P * (4 / α) # scaled appropriately
+const longitudinal_petzval = -8N ^ 2 * aberr.W220P * λ
 
 # Petzval radius of curvature
 const ρ =  h′ ^ 2 / 2longitudinal_petzval
@@ -221,8 +221,11 @@ const ρ =  h′ ^ 2 / 2longitudinal_petzval
     @test aberr.W111 ≈ (α * W111 / 2) atol = wave_scale
     @test ρ / f ≈ PTZ_F atol = system_scale
     # Petzval curvature
-    PTZC = -sum(@views(system.lens[:,2] ./ system.lens.n[begin+1:end])) / λ
-    @test inv(ρ) / λ ≈ PTZC atol = wave_scale
+    Φᵢ = @view system.lens[:,2]
+    n′ = @view system.lens.n[begin+1:end]
+    n = @view system.lens.n[1:end-1]
+    PTZC = -sum(Φᵢ ./ (n′ .* n))
+    @test inv(ρ) ≈ PTZC
 end
 
 @testset "transfer matrix" begin
