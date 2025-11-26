@@ -83,7 +83,7 @@ end
     t::Vector{Float64}
     n::Vector{Float64}
     K::Vector{Float64} = Float64[]
-    p::Vector{Polynomial} = Polynomial(zero)[]
+    p::Vector{Polynomial} = Polynomial{typeof(zero)}[]
     function Layout{T}(M, R, t, n, K, p) where T <: Profile
         isempty(K) && (K = zeros(length(R)))
         isempty(p) && (p = fill_poly(length(R)))
@@ -104,6 +104,10 @@ Layout{Aspheric}(M) = Layout{Aspheric}(M, eachcol(M)..., fill_poly(size(M, 1)))
 function Layout(R, t, n)
     x = length(R)
     Layout{Spherical}([R t n], R, t, n, zeros(x), fill_poly(x))
+end
+
+function Layout(M, R, t, n, K, p)
+    Layout{iszero(K) && all(==(zero), p) ? Spherical : Aspheric}(M, R, t, n, K, p)
 end
 
 struct Pupil
