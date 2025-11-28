@@ -1,5 +1,4 @@
 import Optim
-using LinearAlgebra
 
 # This employs an Augmented Lagrangian method
 # the magic numbers and arbitrary values are somewhat based on heuristics

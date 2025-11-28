@@ -88,11 +88,11 @@ function sag(real::RealRay, paraxial::ParaxialRay{Marginal})
     real.z[end-1] - paraxial.z[end-1]
 end
 
-# surface normal angle: arctan(ds/dy)
-tilt(y, R, K, p) = atan(sign(R) * y / sqrt(R ^ 2 - y ^ 2 * (1 + K)) + dp_dy(p, y))
+# surface normal slope
+tilt(y, R, K, p) = sign(R) * y / sqrt(R ^ 2 - y ^ 2 * (1 + K)) + dp_dy(p, y)
 
-# equivalent to the above for spherical surfaces
-tilt(y, R) = asin(y / R)
+# equivalent to the sine of the above tangent angle for spherical surfaces
+tilt(y, R) = y / R
 
 dp_dy(p, y) = imag(p(complex(y, ϵ))) / ϵ
 
@@ -143,7 +143,6 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
     ts = copy(t)
     rt = similar(surfaces, size(surfaces, 1), 2)
     rt[1,:] .= y, U
-    s = 0.0
     for i = 1:size(surfaces, 1)-1
         y += tan(U) * ts[i]
         Rs = R[i+1]
@@ -155,7 +154,7 @@ function raytrace(surfaces::AbstractMatrix, y, U, ::Type{RealRay};
         # update distances
         ts[i] += s
         ts[i+1] -= s
-        θ = iszero(Ks) && ps ≡ zero ? tilt(y, Rs) : tilt(y, Rs, Ks, ps)
+        θ = iszero(Ks) && ps ≡ zero ? asin(tilt(y, Rs)) : atan(tilt(y, Rs, Ks, ps))
         sin_i′ = n[i] * sin(U + θ) / n[i+1]
         U = abs(sin_i′) ≤ 1.0 ? asin(sin_i′) - θ : NaN # total internal reflection
         rt[i+1,1] = y

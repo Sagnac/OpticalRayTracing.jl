@@ -1,6 +1,6 @@
 module OpticalRayTracing
 
-using Printf
+using Printf, LinearAlgebra
 
 export TransferMatrix,
        Lens,
@@ -10,6 +10,8 @@ export TransferMatrix,
        Tangential,
        FOV,
        transfer,
+       refract,
+       refract!,
        reverse_transfer,
        raytrace,
        trace_marginal_ray,
@@ -50,6 +52,7 @@ include("TransferMatrix.jl")
 include("Vignetting.jl")
 include("SeidelAberrations.jl")
 include("Optimization.jl")
+include("FullRayTracing.jl")
 include("BaseMethods.jl")
 include("RayPlot.jl")
 include("API.jl")
