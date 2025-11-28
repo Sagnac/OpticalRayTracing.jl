@@ -1,8 +1,6 @@
 # Helium Fraunhofer d-line wavelength in millimeters
 const λ = 587.5618e-6
 
-const k_rays = 22
-
 Δ(x, y, i) = x[i+1] / y[i+1] - x[i] / y[i]
 
 function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,

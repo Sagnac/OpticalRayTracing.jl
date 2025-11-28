@@ -1,5 +1,7 @@
 const ϵ = sqrt(eps())
 
+const k_rays = 22
+
 function scale!(M::Lens)
     M[:,2] .*= 1E-3
     return M

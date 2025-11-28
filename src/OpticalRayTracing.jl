@@ -44,6 +44,7 @@ export TransferMatrix,
        Spherical,
        Aspheric,
        RayBasis,
+       full_trace,
        optimize
 
 include("Types.jl")

@@ -46,3 +46,47 @@ function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
     end
     return x, y
 end
+
+function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_rays;
+                    K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
+    H = abs(H)
+    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    real_chief = trace_chief_ray(surfaces, system)
+    real_marginal = trace_marginal_ray(surfaces, system)
+    U = H * real_chief.u[1]
+    y_EP = real_marginal.y[1]
+    y_max = iszero(U) ? y_EP : real_chief.y[2] + y_EP
+    surfaces = [surfaces; [Inf 0.0 1.0]]
+    surfaces[end-1,2] = system.EBFD * system.lens.n[end]
+    V = 0.0
+    k_rays_2 = div(k_rays, 2) + 1
+    # εy = Matrix{Float64}(undef, k_rays, k_rays)
+    # εx = Matrix{Float64}(undef, k_rays, k_rays)
+    εy = Matrix{Float64}(undef, k_rays_2, k_rays)
+    εx = Matrix{Float64}(undef, k_rays_2, k_rays)
+    ρ = range(0.0, y_max, k_rays)
+    θ = range(0.0, π, k_rays_2)
+    # θ = range(0.0, 2π, k_rays)
+    i = 1
+    for ρᵢ ∈ ρ, θᵢ ∈ θ
+        y = ρᵢ * cos(θᵢ)
+        x = ρᵢ * sin(θᵢ)
+        if typeof(system) <: RayBasis
+            ȳ = system.chief.y[2] + system.chief.u[1] * system.marginal.z[1]
+            EP_O = system.marginal.z[1] - system.EP.t
+            U = (ȳ - y) / EP_O
+            V = -x / EP_O
+        end
+        x, y = raytrace(surfaces, y, x, U, V, Vector{RealRay}; K, p)
+        εy[i] = y - H * system.chief.y[end]
+        εx[i] = x
+        i += 1
+    end
+    εy = [εy; @view(εy[end-1:-1:1,:])]
+    εx = [εx; -@view(εx[end-1:-1:1,:])]
+    return εx, εy
+end
+
+function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
+    full_trace(surfaces, system, H, k_rays; K = surfaces.K, p = surfaces.p)
+end
