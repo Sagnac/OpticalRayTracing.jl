@@ -56,17 +56,17 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     U = H * real_chief.u[1]
     y_EP = real_marginal.y[1]
     y_max = iszero(U) ? y_EP : real_chief.y[2] + y_EP
-    surfaces = [surfaces; [Inf 0.0 1.0]]
+    surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
     surfaces[end-1,2] = system.EBFD * system.lens.n[end]
     V = 0.0
-    k_rays_2 = div(k_rays, 2) + 1
-    # εy = Matrix{Float64}(undef, k_rays, k_rays)
-    # εx = Matrix{Float64}(undef, k_rays, k_rays)
-    εy = Matrix{Float64}(undef, k_rays_2, k_rays)
-    εx = Matrix{Float64}(undef, k_rays_2, k_rays)
+    # k_rays_2 = div(k_rays, 2) + 1
+    εy = Matrix{Float64}(undef, k_rays, k_rays)
+    εx = Matrix{Float64}(undef, k_rays, k_rays)
+    # εy = Matrix{Float64}(undef, k_rays_2, k_rays)
+    # εx = Matrix{Float64}(undef, k_rays_2, k_rays)
     ρ = range(0.0, y_max, k_rays)
-    θ = range(0.0, π, k_rays_2)
-    # θ = range(0.0, 2π, k_rays)
+    θ = range(0.0, 2π, k_rays)
+    # θ = range(0.0, π, k_rays_2)
     i = 1
     for ρᵢ ∈ ρ, θᵢ ∈ θ
         y = ρᵢ * cos(θᵢ)
@@ -82,8 +82,8 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
         εx[i] = x
         i += 1
     end
-    εy = [εy; @view(εy[end-1:-1:1,:])]
-    εx = [εx; -@view(εx[end-1:-1:1,:])]
+    # εy = [εy; @view(εy[end-1:-1:1,:])]
+    # εx = [εx; -@view(εx[end-1:-1:1,:])]
     return RealRayError(εx, εy, system.marginal.nu[end])
 end
 
@@ -92,5 +92,5 @@ function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_ra
 end
 
 function wavegrad(ε::RealRayError, λ = λ)
-    map(field -> rotl90(getfield(ε, field) * ε.nu / λ), (:x, :y))
+    map(field -> getfield(ε, field) * ε.nu / λ, (:x, :y))
 end
