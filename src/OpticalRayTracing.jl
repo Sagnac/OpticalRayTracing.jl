@@ -45,6 +45,7 @@ export TransferMatrix,
        Aspheric,
        RayBasis,
        full_trace,
+       wavegrad,
        optimize
 
 include("Types.jl")

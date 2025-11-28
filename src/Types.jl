@@ -176,6 +176,12 @@ struct RayError{T <: AbstractRay}
     field_sign::Int
 end
 
+struct RealRayError
+    x::Matrix{Float64}
+    y::Matrix{Float64}
+    nu::Float64
+end
+
 const SystemOrRayBasis = Union{System, RayBasis}
 
 const OpticalMatrix = Union{Lens, Layout, TransferMatrix}

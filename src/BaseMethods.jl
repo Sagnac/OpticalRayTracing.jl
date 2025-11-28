@@ -56,6 +56,8 @@ function show(io::IO, ::MIME"text/plain", aberr::T) where T <: Aberration
     return
 end
 
+show(io::IO, real_ray_error::RealRayError) = summary(io, real_ray_error)
+
 show(io::IO, vig::Vignetting) = summary(io, vig)
 
 function show(io::IO, mime::MIME"text/plain", vig::Vignetting)

@@ -12,9 +12,7 @@ y, ε = TSA(surfaces, system)
 θ = range(0.0, 2π, length(ρ))
 
 # convert to the derivative of the wavefront error in waves
-real_marginal_ray = trace_marginal_ray(surfaces, system)
-NA = surfaces[end, 3] * sin(real_marginal_ray.u[end]) # n′sin(U′)
-∂W = ε * NA / λ
+∂W = ε * system.marginal.nu[end] / λ
 
 OPDx = @. ∂W' * cos(θ)
 OPDy = @. ∂W' * sin(θ)

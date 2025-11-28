@@ -84,9 +84,13 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     end
     εy = [εy; @view(εy[end-1:-1:1,:])]
     εx = [εx; -@view(εx[end-1:-1:1,:])]
-    return εx, εy
+    return RealRayError(εx, εy, system.marginal.nu[end])
 end
 
 function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
     full_trace(surfaces, system, H, k_rays; K = surfaces.K, p = surfaces.p)
+end
+
+function wavegrad(ε::RealRayError, λ = λ)
+    map(field -> rotl90(getfield(ε, field) * ε.nu / λ), (:x, :y))
 end
