@@ -3,7 +3,7 @@ module MakieExtension
 using OpticalRayTracing, Makie, Printf
 
 using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays,
-                         surface_to_focus
+                         surface_to_focus, RealRayError
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion, spot_size, caustic
@@ -229,6 +229,8 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     H = slider.value
     on(_ -> reset_limits!(axis), H)
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    # TODO: halve the number of computations
+    # by taking advantage of rotational symmetry
     x = y = range(-1.0, 1.0, k)
     lattice = [(xᵢ, yᵢ) for xᵢ ∈ x for yᵢ ∈ y if hypot(xᵢ, yᵢ) ≤ 1.0]
     ε = RayError{Skew}(W, s)
@@ -248,6 +250,17 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     scatter!(axis, εx_εy; kwargs...)
     DataInspector(fig)
     return fig
+end
+
+function spot_size(ε::RealRayError; kwargs...)
+    axis = (
+        title = "Real Error Spot Diagram",
+        xlabel = L"\varepsilon_X",
+        ylabel = L"\varepsilon_Y"
+    )
+    plot = scatter(vec(ε.x), vec(ε.y); axis, kwargs...)
+    DataInspector()
+    return plot
 end
 
 function caustic(surfaces::AbstractMatrix, system::System,
