@@ -61,7 +61,7 @@ end
 function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_rays;
                     K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
     H = abs(H)
-    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     real_chief = trace_chief_ray(surfaces, system)
     real_marginal = trace_marginal_ray(surfaces, system)
     U = H * real_chief.u[1]

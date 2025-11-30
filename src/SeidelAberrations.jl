@@ -53,7 +53,7 @@ end
 
 function (W::Aberration)(ρ, θ, H)
     H = abs(H)
-    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     0.0 ≤ ρ ≤ 1.0 || throw(DomainError(ρ, "Domain: 0.0 ≤ ρ ≤ 1.0"))
     H *= W.field_sign
     (; W040, W131, W222, W220, W311, W020, W111) = W
@@ -92,21 +92,21 @@ end
 
 function (ε_y::RayError{Tangential})(y, H)
     H = abs(H)
-    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     H *= ε_y.field_sign
     ray_error(ε_y, 0, y, H)[2]
 end
 
 function (ε_x::RayError{Sagittal})(x, H)
     H = abs(H)
-    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     H *= ε_x.field_sign
     ray_error(ε_x, x, 0, H)[1]
 end
 
 function (ε::RayError{Skew})(x, y, H)
     H = abs(H)
-    0.0 ≤ H ≤ 1.0 || throw(DomainError(H, "Domain: 0.0 ≤ |H| ≤ 1.0"))
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     H *= ε.field_sign
     ray_error(ε, x, y, H)
 end
