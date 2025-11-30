@@ -342,3 +342,20 @@ end
     # should exhibit zero spherical aberration
     @test aspheric_system.marginal.z[end] == real_marginal.z[end] == -50.0
 end
+
+@testset "full ray tracing & pupil sampling" begin
+    real_marginal = trace_marginal_ray(surfaces, system)
+    real_chief = trace_chief_ray(surfaces, system)
+    y = real_marginal.y[1]
+    ȳ_vertex = real_chief.y[2] - tan(real_chief.u[1]) * real_chief.z[2]
+    Ū = real_chief.u[1]
+    vec_marginal = raytrace(surfaces, y, zeros(3)..., Vector{RealRay})
+    vec_chief = raytrace(surfaces, ȳ_vertex, 0.0, Ū, 0.0, Vector{RealRay})
+    ε_marginal = full_trace(surfaces, system, 0.0)
+    ε_chief = full_trace(surfaces, system, 1.0)
+    t = surface_to_focus(EBFD, real_chief, marginal)
+    @test real_marginal.y[end-1] ≈ vec_marginal[2]
+    @test real_chief.y[end-1] ≈ vec_chief[2]
+    @test TSA(surfaces, system)[2][end] ≈ ε_marginal.y[1,end]
+    # @test transfer(real_chief, t) - h′ ≈ ε_chief.y[1,1]
+end
