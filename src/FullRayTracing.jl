@@ -64,24 +64,26 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
     real_chief = trace_chief_ray(surfaces, system)
     real_marginal = trace_marginal_ray(surfaces, system)
-    U = H * real_chief.u[1]
+    Ū = real_chief.u[1]
+    U = H * Ū
+    ū = tan(Ū)
     y_EP = real_marginal.y[1]
-    y_max = iszero(U) ? y_EP : real_chief.y[2] + y_EP
+    y_max, y_mean = (y - tan(U) * system.EP.t for y in (y_EP, 0.0))
+    h′ = transfer(system, [0.0, ū], -system.EP.t, system.EBFD)[1]
     surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
     surfaces[end-1,2] = system.EBFD * system.lens.n[end]
     V = 0.0
     k_rays_2 = div(k_rays, 2) + 1
     εy = Matrix{Float64}(undef, k_rays_2, k_rays)
     εx = Matrix{Float64}(undef, k_rays_2, k_rays)
-    # εy = Matrix{Float64}(undef, k_rays, k_rays)
-    # εx = Matrix{Float64}(undef, k_rays, k_rays)
-    ρ = y_max .* sqrt.(range(0.0, 1.0, k_rays)) # uniform sampling
+    ρ = sqrt.(range(0.0, 1.0, k_rays)) # uniform sampling
+    ρy = y_max .* ρ
+    ρx = y_EP .* ρ
     θ = range(0.0, π, k_rays_2) # take advantage of symmetry
-    # θ = range(0.0, 2π, k_rays)
     i = 1
-    for ρᵢ ∈ ρ, θᵢ ∈ θ
-        y = ρᵢ * cos(θᵢ)
-        x = ρᵢ * sin(θᵢ)
+    for i_ρ ∈ eachindex(ρ), θᵢ ∈ θ
+        y = y_mean + ρy[i_ρ] * cos(θᵢ)
+        x = ρx[i_ρ] * sin(θᵢ)
         if typeof(system) <: RayBasis
             ȳ = system.chief.y[2] + system.chief.u[1] * system.marginal.z[1]
             EP_O = system.marginal.z[1] - system.EP.t
@@ -89,7 +91,7 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
             V = -x / EP_O
         end
         x, y = raytrace(surfaces, y, x, U, V, Vector{RealRay}; K, p)
-        εy[i] = y - H * system.chief.y[end]
+        εy[i] = y - H * h′
         εx[i] = x
         i += 1
     end
