@@ -1,3 +1,23 @@
+function sag(y, x, u, v, R, K, p)
+    if isfinite(R)
+        β = R - y * u - x * v
+        r2 = x ^ 2 + y ^ 2
+        Δ = β ^ 2 - r2 * (1 + K + u ^ 2 + v ^ 2)
+        if Δ ≥ 0.0
+            return r2 / (β + sign(R) * sqrt(Δ)) + p(y)
+        else
+            return NaN # misses surface
+        end
+    else
+        return 0.0
+    end
+end
+
+function tilt(y, x, R, K, p)
+    Δ = R ^ 2 - (x ^ 2 + y ^ 2) * (1 + K)
+    [sign(R) * α / sqrt(Δ) + dp_dy(p, α) for α ∈ (x, y)]
+end
+
 function refract!(k::Vector, m::Vector, n1::Float64, n2::Float64)
     η = n1 / n2
     γ = -k ⋅ m
@@ -13,36 +33,27 @@ end
 function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
                   K = zeros(size(surfaces, 1)), p = fill(zero, length(K)))
     R, t, n = eachcol(surfaces)
-    tsy = copy(t)
-    tsx = copy(t)
+    ts = copy(t)
     u = tan(U)
     v = tan(V)
     k = [v, u, 1.0]
     normalize!(k) # direction cosines
-    m = [0.0, 0.0, -1.0] # surface normal
     for i = 1:size(surfaces, 1)-1
-        y += u * tsy[i]
-        x += v * tsx[i]
+        y += u * ts[i]
+        x += v * ts[i]
         Rs = R[i+1]
         Ks = K[i+1]
         ps = p[i+1]
-        sy = sag(y, U, Rs, Ks, ps)
-        sx = sag(x, V, Rs, Ks, ps)
-        y += sy * u
-        x += sx * v
-        tsy[i] += sy
-        tsx[i] += sx
-        tsy[i+1] -= sy
-        tsx[i+1] -= sx
-        ds_dy = tilt(y, Rs, Ks, ps)
-        ds_dx = tilt(x, Rs, Ks, ps)
-        m .= ds_dx, ds_dy, -1.0
+        s = sag(y, x, u, v, Rs, Ks, ps)
+        y += s * u
+        x += s * v
+        ts[i] += s
+        ts[i+1] -= s
+        m = [tilt(y, x, Rs, Ks, ps); -1.0] # surface normal / gradient
         normalize!(m)
         refract!(k, m, n[i], n[i+1])
         u = k[2] / k[3]
         v = k[1] / k[3]
-        U = atan(u)
-        V = atan(v)
     end
     return x, y
 end
