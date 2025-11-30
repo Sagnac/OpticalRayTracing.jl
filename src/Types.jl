@@ -180,6 +180,8 @@ struct RealRayError
     x::Matrix{Float64}
     y::Matrix{Float64}
     nu::Float64
+    r::Vector{Float64}
+    t::Vector{Float64}
 end
 
 const SystemOrRayBasis = Union{System, RayBasis}

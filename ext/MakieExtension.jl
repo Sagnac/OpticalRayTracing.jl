@@ -229,7 +229,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     H = slider.value
     on(_ -> reset_limits!(axis), H)
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
-    # TODO: halve the number of computations
+    # TODO: reduce the number of computations by a quarter
     # by taking advantage of rotational symmetry
     x = y = range(-1.0, 1.0, k)
     lattice = [(xᵢ, yᵢ) for xᵢ ∈ x for yᵢ ∈ y if hypot(xᵢ, yᵢ) ≤ 1.0]
