@@ -357,5 +357,18 @@ end
     @test real_marginal.y[end-1] ≈ vec_marginal[2]
     @test real_chief.y[end-1] ≈ vec_chief[2]
     @test TSA(surfaces, system)[2][end] ≈ ε_marginal.y[1,end]
-    # @test transfer(real_chief, t) - h′ ≈ ε_chief.y[1,1]
+end
+
+# continuation of the above, but more specific
+@testset "vector refraction / reflection" begin
+    layout = [
+        Inf         0.0     1.0
+        -100.0    -24.0    -1.0
+          50.0     -3.0    -1.5
+         -50.0      0.0    -1.0
+    ]
+    test_system = solve(layout, [15.0, 11.0, 11.0], 10.0)
+    rt = raytrace(layout, 15.0, 0.0, RealRay)
+    vec_rt = raytrace(layout, 15.0, 0.0, 0.0, 0.0, Vector{RealRay})
+    @test rt.y[end] ≈ vec_rt[2]
 end
