@@ -76,12 +76,13 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     k_rays_2 = div(k_rays, 2) + 1
     εy = Matrix{Float64}(undef, k_rays_2, k_rays)
     εx = Matrix{Float64}(undef, k_rays_2, k_rays)
-    ρ = y_EP .* sqrt.(range(0.0, 1.0, k_rays)) # uniform sampling
+    ρ = sqrt.(range(0.0, 1.0, k_rays)) # uniform sampling
     θ = range(0.0, π, k_rays_2) # take advantage of symmetry
+    proj = y_EP * cos(U)
     i = 1
     for ρᵢ ∈ ρ, θᵢ ∈ θ
-        y = ρᵢ * cos(θᵢ)
-        x = ρᵢ * sin(θᵢ)
+        y = ρᵢ * cos(θᵢ) * proj
+        x = y_EP * ρᵢ * sin(θᵢ)
         if typeof(system) <: RayBasis
             z0 = system.marginal.z[1]
             ȳ = system.chief.y[2] + system.chief.u[1] * z0
