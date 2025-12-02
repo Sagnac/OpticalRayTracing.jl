@@ -277,7 +277,7 @@ function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
     ȳū = [ȳ ū]
     n = surfaces[:,3]
     z = ray.z[end] .- reverse(ray.z)
-    z[1] = -ȳ[2] / tan(ū[1])
+    z[1] = -ȳ[2] / tan(ū[1]) + z[2] # EP distance from vertex
     push!(z, z[end] - ȳ[end-1] / tan(ū[end-1]))
     return RealRay{Chief}(ȳ, ū, ȳū, n, z)
 end
