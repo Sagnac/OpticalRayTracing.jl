@@ -23,7 +23,7 @@ function refract!(k::Vector, m::Vector, n1::Float64, n2::Float64)
     γ = -k ⋅ m
     Δ = 1 - η ^ 2 * (1 - γ ^ 2)
     if Δ ≥ 0.0
-        @. k = abs(η) * k + (η * γ - sign(η) * sqrt(Δ)) * m
+        @. k = η * k + (η * γ - sqrt(Δ)) * m
     else
         @. k += 2.0 * γ * m # TIR
     end
