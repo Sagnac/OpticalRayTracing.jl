@@ -70,6 +70,7 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     u = tan(U)
     y_EP = real_marginal.y[1]
     h′ = transfer(system, [0.0, u], -EP_t, system.EBFD)[1]
+    # extend the surface matrix to the paraxial image plane
     surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
     surfaces[end-1,2] = system.EBFD * system.lens.n[end]
     V = 0.0
@@ -106,7 +107,8 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
 end
 
 function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
-    full_trace(surfaces, system, H, k_rays; K = surfaces.K, p = surfaces.p)
+    full_trace(surfaces.M, system, H, k_rays;
+               K = [surfaces.K; 0.0], p = [surfaces.p; zero])
 end
 
 function wavegrad(ε::RealRayError, λ = λ)
