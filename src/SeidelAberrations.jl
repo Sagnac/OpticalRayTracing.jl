@@ -19,6 +19,7 @@ function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,
     Ā = [(H + A[i] * ȳ[i]) / y[i] for i ∈ j]
     yΔ = [y[i] * Δ(u, n, i) for i ∈ j]
     yδ = [y[i] * Δ(δn, n, i) for i ∈ j]
+    Δn2 = [inv(n[i+1]) ^ 2 - inv(n[i]) ^ 2 for i ∈ j]
     P = [(inv(n[i+1]) - inv(n[i])) / R[i] for i ∈ j]
     # per surface contributions
     spherical = @. -A ^ 2 * yΔ / 8λ
@@ -26,7 +27,7 @@ function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,
     astigmatism = @. -Ā ^ 2 * yΔ / 2λ
     petzval = @. -H ^ 2 * P / 4λ
     sagittal = @. petzval + astigmatism / 2
-    distortion = @. Ā / A * (astigmatism + 2 * petzval)
+    distortion = @. -Ā * (Ā ^ 2 * y * Δn2 - (H + Ā * y) * ȳ * P) / 2λ
     axial = @. A * yδ / 2λ
     lateral = @. Ā * yδ / λ
     medial = @. petzval + astigmatism
