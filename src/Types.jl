@@ -182,6 +182,8 @@ struct RealRayError
     nu::Float64
     r::Vector{Float64}
     t::Vector{Float64}
+    H::Float64
+    RMS::Float64
 end
 
 const SystemOrRayBasis = Union{System, RayBasis}

@@ -101,7 +101,7 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
     nu = system.marginal.nu[end]
     # angle convention for Zernike polynomials
     θ_Z = range(start = π/2, step = step(θ), length = k_rays)
-    return RealRayError(εx, εy, nu, ρ, θ_Z)
+    return RealRayError(εx, εy, nu, ρ, θ_Z, H, σ(εx, εy))
 end
 
 function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
@@ -110,4 +110,10 @@ end
 
 function wavegrad(ε::RealRayError, λ = λ)
     map(field -> getfield(ε, field) * ε.nu / λ, (:x, :y))
+end
+
+function σ(εx, εy)
+    n = length(εx)
+    μx, μy = (sum(ε) / n for ε ∈ (εx, εy))
+    sqrt((sum((εx .- μx) .^ 2) + sum((εy .- μy) .^ 2)) / n)
 end

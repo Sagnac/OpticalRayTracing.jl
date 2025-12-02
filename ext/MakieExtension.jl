@@ -254,7 +254,7 @@ end
 
 function spot_size(ε::RealRayError; kwargs...)
     axis = (
-        title = "Real Error Spot Diagram",
+        title = "H = $(ε.H)\nRMS Spot Size = " * @sprintf("%.5f", ε.RMS),
         xlabel = L"\varepsilon_X",
         ylabel = L"\varepsilon_Y"
     )
