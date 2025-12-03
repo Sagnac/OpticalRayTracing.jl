@@ -212,7 +212,7 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
 end
 
 function spot_size(W::Aberration, s::SystemOrRayBasis;
-                   k = round(Int, √k) + 1, kwargs...)
+                   k = 10 * k_rays, kwargs...)
     fig = Figure()
     axis = Axis(fig[1,1];
         xlabel = L"\varepsilon_X",
@@ -230,7 +230,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     H = slider.value
     # on(_ -> reset_limits!(axis), H)
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
-    # TODO: reduce the number of computations by a quarter
+    # TODO: reduce the number of computations
     # by taking advantage of rotational symmetry
     x = y = range(-1.0, 1.0, k)
     lattice = [(xᵢ, yᵢ) for xᵢ ∈ x for yᵢ ∈ y if hypot(xᵢ, yᵢ) ≤ 1.0]

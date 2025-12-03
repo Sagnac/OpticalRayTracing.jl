@@ -177,8 +177,8 @@ struct RayError{T <: AbstractRay}
 end
 
 struct RealRayError
-    x::Matrix{Float64}
-    y::Matrix{Float64}
+    x::Vector{Float64}
+    y::Vector{Float64}
     nu::Float64
     r::Vector{Float64}
     t::Vector{Float64}

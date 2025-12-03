@@ -25,7 +25,8 @@ function refract!(k::Vector, m::Vector, n1::Float64, n2::Float64)
     if Δ ≥ 0.0
         @. k = η * k + (η * γ - sqrt(Δ)) * m
     else
-        @. k += 2.0 * γ * m # TIR
+        # @. k += 2.0 * γ * m
+        return NaN # TIR
     end
     return k
 end
@@ -63,54 +64,60 @@ function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
     return xv, yv
 end
 
-function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_rays;
+function full_trace(surfaces::Matrix, system::System, H, k_rays = 10 * k_rays;
                     K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
     H = abs(H)
     H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
+    stop = system.stop
+    a_stop = abs(system.a[stop])
     real_chief = trace_chief_ray(surfaces, system)
     real_marginal = trace_marginal_ray(surfaces, system)
     EP_t = real_chief.z[1]
     Ū = real_chief.u[1]
     U = H * Ū
     u = tan(U)
-    y_EP = real_marginal.y[1]
+    y_EP = abs(real_marginal.y[1])
+    y0 = -u * EP_t
     h′ = transfer(system, [0.0, u], -EP_t, system.EBFD)[1]
     # extend the surface matrix to the paraxial image plane
     surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
     surfaces[end-1,2] = system.EBFD * system.lens.n[end]
     V = 0.0
-    k_rays_2 = div(k_rays, 2) + 1
-    εy = Matrix{Float64}(undef, k_rays_2, k_rays)
-    εx = Matrix{Float64}(undef, k_rays_2, k_rays)
-    ρ = sqrt.(range(0.0, 1.0, k_rays)) # uniform sampling
-    θ = range(0.0, π, k_rays_2) # take advantage of symmetry
-    proj = y_EP * cos(U)
-    i = 1
-    for ρᵢ ∈ ρ, θᵢ ∈ θ
-        y = ρᵢ * cos(θᵢ) * proj
-        x = y_EP * ρᵢ * sin(θᵢ)
-        if typeof(system) <: RayBasis
-            z0 = system.marginal.z[1]
-            ȳ = system.chief.y[2] + system.chief.u[1] * z0
-            EP_O = z0 - EP_t
-            U = (ȳ - y) / EP_O
-            V = -x / EP_O
-        end
-        y -= tan(U) * EP_t
-        xv, yv = raytrace(surfaces, y, x, U, V, Vector{RealRay}; K, p)
-        x = xv[end]
-        y = yv[end]
-        εy[i] = y - h′
-        εx[i] = x
-        i += 1
+    k_rays_2 = div(k_rays, 2)
+    εy = Float64[]
+    εx = Float64[]
+    r = Float64[]
+    θ = Float64[]
+    y = range(y0 - y_EP, y0 + y_EP, k_rays)
+    # x = range(-y_EP, y_EP, k_rays)
+    x = range(0.0, y_EP, k_rays_2)
+    for yᵢ ∈ y, xᵢ ∈ x
+        # if typeof(system) <: RayBasis
+            # z0 = system.marginal.z[1]
+            # ȳ = system.chief.y[2] + system.chief.u[1] * z0
+            # EP_O = z0 - EP_t
+            # U = (ȳ - y) / EP_O
+            # V = -x / EP_O
+        # end
+        xv, yv = raytrace(surfaces, yᵢ, xᵢ, U, V, Vector{RealRay}; K, p)
+        xf = xv[end]
+        yf = yv[end]
+        rᵢ = hypot(xv[stop], yv[stop])
+        (rᵢ > a_stop || isnan(xf) || isnan(yf)) && continue
+        θᵢ = atan(yv[stop], xv[stop])
+        push!(εy, yf - h′)
+        push!(εx, xf)
+        push!(r, rᵢ)
+        push!(θ, θᵢ)
     end
     # take advantage of symmetry
-    εy = [εy; @view(εy[end-1:-1:begin+1,:])]
-    εx = [εx; -@view(εx[end-1:-1:begin+1,:])]
+    εy = [εy; εy]
+    εx = [εx; -εx]
+    ρ = r / maximum(r)
+    ρ = [ρ; ρ]
+    θ = [θ; π .- θ]
     nu = system.marginal.nu[end]
-    # angle convention for Zernike polynomials
-    θ_Z = range(start = π/2, step = step(θ), length = k_rays)
-    return RealRayError(εx, εy, nu, ρ, θ_Z, H, σ(εx, εy))
+    return RealRayError(εx, εy, nu, ρ, θ, H, σ(εx, εy))
 end
 
 function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
