@@ -216,7 +216,8 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     fig = Figure()
     axis = Axis(fig[1,1];
         xlabel = L"\varepsilon_X",
-        ylabel = L"\varepsilon_Y"
+        ylabel = L"\varepsilon_Y",
+        aspect = DataAspect()
     )
     H = range(0.0, 1.0, k)
     grid = GridLayout(fig[1,2])
@@ -227,7 +228,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
         snap = false,
     )
     H = slider.value
-    on(_ -> reset_limits!(axis), H)
+    # on(_ -> reset_limits!(axis), H)
     grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
     # TODO: reduce the number of computations by a quarter
     # by taking advantage of rotational symmetry
@@ -256,7 +257,8 @@ function spot_size(ε::RealRayError; kwargs...)
     axis = (
         title = "H = $(ε.H)\nRMS Spot Size = " * @sprintf("%.5f", ε.RMS),
         xlabel = L"\varepsilon_X",
-        ylabel = L"\varepsilon_Y"
+        ylabel = L"\varepsilon_Y",
+        aspect = DataAspect()
     )
     plot = scatter(vec(ε.x), vec(ε.y); axis, kwargs...)
     DataInspector()
