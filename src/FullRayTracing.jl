@@ -38,7 +38,10 @@ function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
     v = tan(V)
     k = [v, u, 1.0]
     normalize!(k) # direction cosines
-    for i = 1:size(surfaces, 1)-1
+    vec_length = size(surfaces, 1)-1
+    xv = Vector{Float64}(undef, vec_length)
+    yv = Vector{Float64}(undef, vec_length)
+    for i = 1:vec_length
         y += u * ts[i]
         x += v * ts[i]
         Rs = R[i+1]
@@ -54,8 +57,10 @@ function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
         refract!(k, m, n[i], n[i+1])
         u = k[2] / k[3]
         v = k[1] / k[3]
+        xv[i] = x
+        yv[i] = y
     end
-    return x, y
+    return xv, yv
 end
 
 function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_rays;
@@ -92,7 +97,9 @@ function full_trace(surfaces::Matrix, system::SystemOrRayBasis, H, k_rays = k_ra
             V = -x / EP_O
         end
         y -= tan(U) * EP_t
-        x, y = raytrace(surfaces, y, x, U, V, Vector{RealRay}; K, p)
+        xv, yv = raytrace(surfaces, y, x, U, V, Vector{RealRay}; K, p)
+        x = xv[end]
+        y = yv[end]
         εy[i] = y - h′
         εx[i] = x
         i += 1

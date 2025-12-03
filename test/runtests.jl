@@ -354,8 +354,8 @@ end
     ε_marginal = full_trace(surfaces, system, 0.0)
     ε_chief = full_trace(surfaces, system, 1.0)
     t = surface_to_focus(EBFD, real_chief, marginal)
-    @test real_marginal.y[end-1] ≈ vec_marginal[2]
-    @test real_chief.y[end-1] ≈ vec_chief[2]
+    @test real_marginal.y[end-1] ≈ vec_marginal[2][end]
+    @test real_chief.y[end-1] ≈ vec_chief[2][end]
     @test TSA(surfaces, system)[2][end] ≈ ε_marginal.y[1,end]
 end
 
@@ -370,5 +370,5 @@ end
     test_system = solve(layout, [15.0, 11.0, 11.0], 10.0)
     rt = raytrace(layout, 15.0, 0.0, RealRay)
     vec_rt = raytrace(layout, 15.0, 0.0, 0.0, 0.0, Vector{RealRay})
-    @test rt.y[end] ≈ vec_rt[2]
+    @test rt.y[end] ≈ vec_rt[2][end]
 end
