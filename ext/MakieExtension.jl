@@ -118,7 +118,7 @@ function wavefan(W::Aberration; k = k, kwargs...)
         reset_limits!(tangential_axis)
         reset_limits!(sagittal_axis)
     end
-    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    grid[1,1] = Label(fig, @lift(@sprintf("H: %.3f", $H)))
     y = range(-1.0, 1.0, k)
     ρ_y = abs.(y)
     θ = atan.(0.0, y)
@@ -155,7 +155,7 @@ function rayfan(W::Aberration, s::SystemOrRayBasis, ; k = k, kwargs...)
         reset_limits!(tangential_axis)
         reset_limits!(sagittal_axis)
     end
-    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    grid[1,1] = Label(fig, @lift(@sprintf("H: %.3f", $H)))
     y = range(-1.0, 1.0, k)
     ε_y = RayError{Tangential}(W, s)
     ε_x = RayError{Sagittal}(W, s)
@@ -229,7 +229,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     )
     H = slider.value
     # on(_ -> reset_limits!(axis), H)
-    grid[1,1] = Label(fig, @lift("H: " * @sprintf("%.3f", $H)))
+    grid[1,1] = Label(fig, @lift(@sprintf("H: %.3f", $H)))
     # TODO: reduce the number of computations
     # by taking advantage of rotational symmetry
     x = y = range(-1.0, 1.0, k)
@@ -246,7 +246,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     var_y = @lift sum(($ε_y_i .- $mean_ε_y) .^ 2) / k
     RMS = @lift sqrt($var_x + $var_y)
     on(RMS; update = true) do RMS
-        axis.title[] = "RMS Spot Size: " * @sprintf("%.5f", RMS)
+        axis.title[] = @sprintf("RMS Spot Size: %.5f", RMS)
     end
     scatter!(axis, εx_εy; kwargs...)
     DataInspector(fig)
@@ -255,7 +255,7 @@ end
 
 function spot_size(ε::RealRayError; kwargs...)
     axis = (
-        title = "H = $(ε.H)\nRMS Spot Size = " * @sprintf("%.5f", ε.RMS),
+        title = @sprintf("H = %.2f\nRMS Spot Size = %.5f", ε.H, ε.RMS),
         xlabel = L"\varepsilon_X",
         ylabel = L"\varepsilon_Y",
         aspect = DataAspect()
