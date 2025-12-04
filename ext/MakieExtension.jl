@@ -3,7 +3,7 @@ module MakieExtension
 using OpticalRayTracing, Makie, Printf
 
 using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays,
-                         surface_to_focus, RealRayError
+                         surface_to_focus, RealRayError, spot_rays
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
                           field_curves, percent_distortion, spot_size, caustic
@@ -212,7 +212,7 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
 end
 
 function spot_size(W::Aberration, s::SystemOrRayBasis;
-                   k = 10 * k_rays, kwargs...)
+                   k = spot_rays, kwargs...)
     fig = Figure()
     axis = Axis(fig[1,1];
         xlabel = L"\varepsilon_X",

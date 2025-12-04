@@ -82,7 +82,7 @@ function trace_edge_rays(surfaces, y1, y2, U, stop, a_stop)
     return Optim.minimizer(result_1)[1], Optim.minimizer(result_2)[1]
 end
 
-function full_trace(surfaces::Matrix, system::System, H, k_rays = 10 * k_rays;
+function full_trace(surfaces::Matrix, system::System, H, k_rays = spot_rays;
                     K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
     H = abs(H)
     H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))

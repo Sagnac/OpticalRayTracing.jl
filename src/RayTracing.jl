@@ -1,6 +1,10 @@
 const ϵ = sqrt(eps())
 
+# default number of rays for caustic & spherical aberration functions
 const k_rays = 22
+
+# default number of rays for full_trace pupil sampling & spot diagrams
+const spot_rays = 64
 
 function scale!(M::Lens)
     M[:,2] .*= 1E-3
