@@ -1,5 +1,3 @@
-import Optim
-
 # This employs an Augmented Lagrangian method
 # the magic numbers and arbitrary values are somewhat based on heuristics
 function optimize(surfaces, system, v, constraints,

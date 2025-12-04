@@ -64,6 +64,24 @@ function raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}};
     return xv, yv
 end
 
+function trace_edge_rays(surfaces, y1, y2, U, stop, a_stop)
+    function stop_loss_1(y)
+        y = only(y)
+        ray = raytrace(surfaces, y, U, RealRay)
+        Δ = abs(ray.y[begin+stop] - a_stop)
+        return isnan(Δ) ? Inf : Δ
+    end
+    function stop_loss_2(y)
+        y = only(y)
+        ray = raytrace(surfaces, y, U, RealRay)
+        Δ = abs(ray.y[begin+stop] + a_stop)
+        return isnan(Δ) ? Inf : Δ
+    end
+    result_1 = Optim.optimize(stop_loss_1, [y1], Optim.BFGS())
+    result_2 = Optim.optimize(stop_loss_2, [y2], Optim.BFGS())
+    return Optim.minimizer(result_1)[1], Optim.minimizer(result_2)[1]
+end
+
 function full_trace(surfaces::Matrix, system::System, H, k_rays = 10 * k_rays;
                     K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
     H = abs(H)
@@ -77,7 +95,8 @@ function full_trace(surfaces::Matrix, system::System, H, k_rays = 10 * k_rays;
     U = H * Ū
     u = tan(U)
     y_EP = abs(real_marginal.y[1])
-    y0 = -u * EP_t
+    y1, y2 = (±(y_EP) - u * EP_t for (±) ∈ (+, -))
+    y1, y2 = trace_edge_rays(surfaces, y1, y2, U, stop, a_stop)
     h′ = transfer(system, [0.0, u], -EP_t, system.EBFD)[1]
     # extend the surface matrix to the paraxial image plane
     surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
@@ -88,7 +107,7 @@ function full_trace(surfaces::Matrix, system::System, H, k_rays = 10 * k_rays;
     εx = Float64[]
     r = Float64[]
     θ = Float64[]
-    y = range(y0 - y_EP, y0 + y_EP, k_rays)
+    y = range(y1, y2, k_rays)
     # x = range(-y_EP, y_EP, k_rays)
     x = range(0.0, y_EP, k_rays_2)
     for yᵢ ∈ y, xᵢ ∈ x

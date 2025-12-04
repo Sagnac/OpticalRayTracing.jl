@@ -1,6 +1,7 @@
 module OpticalRayTracing
 
 using Printf, LinearAlgebra
+import Optim
 
 export TransferMatrix,
        Lens,
