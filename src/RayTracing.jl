@@ -221,7 +221,7 @@ function trace_marginal_ray(lens::Lens, a, ω = 0.0)
     return ParaxialRay{Marginal}(marginal_ray, τ, lens.n), stop, f, EBFD
 end
 
-function trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
+function trace_marginal_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps()))
     (; marginal, a, stop) = system
     y = marginal.y[1]
     u = 0.0
@@ -259,7 +259,7 @@ function trace_chief_ray(lens::Lens, stop::Int,
     return ParaxialRay{Chief}(chief_ray, τ, n)
 end
 
-function trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
+function trace_chief_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps()))
     rev_R = -surfaces[end:-1:2, 1]
     rev_t = @view surfaces[end:-1:1, 2]
     rev_n = @view surfaces[end:-1:1, 3]

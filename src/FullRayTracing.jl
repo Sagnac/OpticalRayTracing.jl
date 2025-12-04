@@ -82,7 +82,8 @@ function trace_edge_rays(surfaces, y1, y2, U, stop, a_stop)
     return Optim.minimizer(result_1)[1], Optim.minimizer(result_2)[1]
 end
 
-function full_trace(surfaces::Matrix, system::System, H, k_rays = spot_rays;
+function full_trace(surfaces::Matrix, system, H::Float64, k_rays::Int = spot_rays,
+                    focus = system.marginal.z[end] - system.marginal.z[end-1];
                     K = zeros(size(surfaces, 1) + 1), p = fill(zero, length(K)))
     H = abs(H)
     H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
@@ -97,10 +98,18 @@ function full_trace(surfaces::Matrix, system::System, H, k_rays = spot_rays;
     y_EP = abs(real_marginal.y[1])
     y1, y2 = (±(y_EP) - u * EP_t for (±) ∈ (+, -))
     y1, y2 = trace_edge_rays(surfaces, y1, y2, U, stop, a_stop)
-    h′ = transfer(system, [0.0, u], -EP_t, system.EBFD)[1]
+    # h′ = transfer(system, [0.0, u], -EP_t, focus)[1]
+    if typeof(system) <: System
+        h′ = u * system.f
+    else
+        h′ = system.chief.y[end]
+        z0 = system.marginal.z[1]
+        ū = system.chief.u[1]
+        ȳ = system.chief.y[2] + ū * z0
+    end
     # extend the surface matrix to the paraxial image plane
     surfaces = [@view(surfaces[:,1:3]); [Inf 0.0 1.0]]
-    surfaces[end-1,2] = system.EBFD * system.lens.n[end]
+    surfaces[end-1,2] = focus
     V = 0.0
     k_rays_2 = div(k_rays, 2)
     εy = Float64[]
@@ -108,16 +117,12 @@ function full_trace(surfaces::Matrix, system::System, H, k_rays = spot_rays;
     r = Float64[]
     θ = Float64[]
     y = range(y1, y2, k_rays)
-    # x = range(-y_EP, y_EP, k_rays)
     x = range(0.0, y_EP, k_rays_2)
     for yᵢ ∈ y, xᵢ ∈ x
-        # if typeof(system) <: RayBasis
-            # z0 = system.marginal.z[1]
-            # ȳ = system.chief.y[2] + system.chief.u[1] * z0
-            # EP_O = z0 - EP_t
-            # U = (ȳ - y) / EP_O
-            # V = -x / EP_O
-        # end
+        if typeof(system) <: RayBasis
+            U = (ȳ - yᵢ) / z0
+            V = -xᵢ / z0
+        end
         xv, yv = raytrace(surfaces, yᵢ, xᵢ, U, V, Vector{RealRay}; K, p)
         xf = xv[end]
         yf = yv[end]
@@ -139,9 +144,16 @@ function full_trace(surfaces::Matrix, system::System, H, k_rays = spot_rays;
     return RealRayError(εx, εy, nu, ρ, θ, H, σ(εx, εy))
 end
 
-function full_trace(surfaces::Layout{Aspheric}, system::System, H, k_rays = k_rays)
+function full_trace(surfaces::Layout{Aspheric}, system, H, k_rays = k_rays,
+                    focus = system.marginal.z[end] - system.marginal.z[end-1])
     full_trace(surfaces.M, system, H, k_rays;
                K = [surfaces.K; 0.0], p = [surfaces.p; zero])
+end
+
+function full_trace(surfaces, system::RayBasis, k_rays = spot_rays,
+                    focus = system.marginal.z[end] - system.marginal.z[end-1];
+                    kwargs...)
+    full_trace(surfaces, system, 1.0, k_rays, focus; kwargs...)
 end
 
 function wavegrad(ε::RealRayError, λ = λ)
