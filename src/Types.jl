@@ -66,6 +66,8 @@ struct RayBasis
     marginal::ParaxialRay{Marginal}
     chief::ParaxialRay{Chief}
     H::Float64
+    a::Vector{Float64}
+    stop::Int
 end
 
 struct TransferMatrix <: AbstractArray{Float64, 2}

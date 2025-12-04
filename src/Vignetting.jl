@@ -1,5 +1,5 @@
-function _vignetting(system::SystemOrRayBasis, a::AbstractVector, stop::Int)
-    (; marginal, chief) = system
+function vignetting(system::SystemOrRayBasis, a::AbstractVector = system.a)
+    (; marginal, chief, stop) = system
     ȳ = abs.(surface_ray(chief.y))
     y = abs.(surface_ray(marginal.y))
     vig = Matrix{Float64}(undef, length(a), 5)
@@ -27,12 +27,4 @@ function _vignetting(system::SystemOrRayBasis, a::AbstractVector, stop::Int)
     full = findall(a .≤ fully_vignetted)
     partial = setdiff(findall(.!a_unvig), full)
     return Vignetting(vig, FOV, un, limit, partial, full)
-end
-
-function vignetting(system::System, a::AbstractVector = system.a)
-    _vignetting(system, system.a, system.stop)
-end
-
-function vignetting(rays::RayBasis, system::System, a::AbstractVector = system.a)
-    _vignetting(rays, a, system.stop)
 end

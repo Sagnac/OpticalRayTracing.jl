@@ -195,7 +195,7 @@ function raytrace(system::System, ȳ, s)
     rays = RayBasis(
         ParaxialRay{Marginal}(marginal_ray, τ, lens.n),
         ParaxialRay{Chief}(chief_ray, τ, lens.n),
-        H
+        H, system.a, system.stop
     )
     return rays
 end
