@@ -343,11 +343,14 @@ end
     @test aspheric_system.marginal.z[end] == real_marginal.z[end] == -50.0
 end
 
+const spot_scale = 0.07
+
 @testset "full ray tracing & pupil sampling" begin
     real_marginal = trace_marginal_ray(surfaces, system)
     real_chief = trace_chief_ray(surfaces, system)
     y = real_marginal.y[1]
-    ȳ_vertex = real_chief.y[2] - tan(real_chief.u[1]) * real_chief.z[2]
+    ū = tan(real_chief.u[1])
+    ȳ_vertex = real_chief.y[2] - ū * real_chief.z[2]
     Ū = real_chief.u[1]
     vec_marginal = raytrace(surfaces, y, zeros(3)..., Vector{RealRay})
     vec_chief = raytrace(surfaces, ȳ_vertex, 0.0, Ū, 0.0, Vector{RealRay})
@@ -357,6 +360,20 @@ end
     @test real_marginal.y[end-1] ≈ vec_marginal[2][end]
     @test real_chief.y[end-1] ≈ vec_chief[2][end]
     # @test TSA(surfaces, system)[2][end] ≈ ε_marginal.y[end]
+    extended_surfaces = [surfaces; [Inf 0.0 1.0]]
+    extended_surfaces[end-1,2] = EBFD
+    ext_chief = raytrace(extended_surfaces, ȳ_vertex, 0.0, Ū, 0.0, Vector{RealRay})
+    h′_real = transfer(real_chief, surface_to_focus(EBFD, real_chief, marginal))
+    @test ext_chief[2][end] ≈ h′_real
+    NBK7 = 1.5168
+    singlet = [Inf 0.0 1.0; 100.0 10.0 NBK7; -100.0 0.0 1.0]
+    singlet_system = solve(singlet, [20.0, 20.0], 17.787)
+    ε1 = full_trace(singlet_system, 0.0)
+    ε2 = full_trace(singlet_system, 0.7)
+    ε3 = full_trace(singlet_system, 1.0)
+    @test ε1.RMS ≈ 0.739649 atol = spot_scale
+    @test ε2.RMS ≈ 1.1 atol = spot_scale
+    @test ε3.RMS ≈ 1.4 atol = spot_scale
 end
 
 # continuation of the above, but more specific
