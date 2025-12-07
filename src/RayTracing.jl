@@ -240,6 +240,10 @@ function trace_marginal_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps(
     return RealRay{Marginal}(ray.y, ray.u, yu, ray.n, ray.z)
 end
 
+function trace_marginal_ray(system::System{Layout}; atol = sqrt(eps()))
+    trace_marginal_ray(system.layout, system; atol)
+end
+
 function trace_chief_ray(lens::Lens, stop::Int,
                          marginal::ParaxialRay{Marginal}, h′ = -0.5)
     (; n) = lens
@@ -260,12 +264,17 @@ function trace_chief_ray(lens::Lens, stop::Int,
 end
 
 function trace_chief_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps()))
-    rev_R = -surfaces[end:-1:2, 1]
+    rev_R = -[Inf; @view(surfaces[end:-1:2, 1])]
     rev_t = @view surfaces[end:-1:1, 2]
     rev_n = @view surfaces[end:-1:1, 3]
-    rev_surfaces = [[Inf; rev_R] rev_t rev_n]
+    if surfaces isa Layout
+        (; K, p) = surfaces
+        rev_surfaces = Layout(rev_R, rev_t, rev_n, reverse(K), reverse(p))
+    else
+        rev_surfaces = Layout([rev_R rev_t rev_n])
+    end
     (; chief, marginal) = system
-    stop = length(rev_R) - system.stop + 1
+    stop = length(rev_R) - system.stop
     ȳ′ = chief.y[end]
     ū′ = -chief.u[end]
     BFD = marginal.z[end] - marginal.z[end-1]
@@ -286,7 +295,11 @@ function trace_chief_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps()))
     return RealRay{Chief}(ȳ, ū, ȳū, n, z)
 end
 
-function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
+function trace_chief_ray(system::System{Layout}; atol = sqrt(eps()))
+    trace_chief_ray(system.layout, system; atol)
+end
+
+function _solve(lens::Lens, a::AbstractVector, h′::Float64)
     marginal_ray, stop, f, EBFD = trace_marginal_ray(lens, a)
     chief_ray = trace_chief_ray(lens, stop, marginal_ray, h′)
     ȳ = chief_ray.y[begin+1]
@@ -304,12 +317,22 @@ function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
     XP = Pupil(abs(2H / n′ū′), -ȳ′b / n′ū′)
     N = abs(f / EP.D)
     FOV = 2atand(abs(chief_ray.u[1]))
-    return System(f, EBFD, EFFD, N, FOV, stop, EP, XP,
-                  marginal_ray, chief_ray, [marginal_ray.yu chief_ray.yu], H,
-                  δ, δ′, PN, TransferMatrix(lens), lens, a)
+    return f, EBFD, EFFD, N, FOV, stop, EP, XP,
+           marginal_ray, chief_ray, [marginal_ray.yu chief_ray.yu], H,
+           δ, δ′, PN, TransferMatrix(lens), lens, a
 end
 
-solve(surfaces, a, h′ = -0.5) = solve(Lens(surfaces), a, h′)
+function solve(lens::Lens, a::AbstractVector, h′::Float64 = -0.5)
+    System{Lens, Spherical}(_solve(lens, a, h′)..., Layout{Spherical}())
+end
+
+function solve(surfaces::AbstractMatrix, a, h′ = -0.5)
+    System{Layout, Spherical}(_solve(Lens(surfaces), a, h′)..., surfaces)
+end
+
+function solve(layout::Layout{S}, a, h′ = -0.5) where S <: Profile
+    System{Layout, S}(_solve(Lens(layout), a, h′)..., layout)
+end
 
 # paraxial incidence angles
 function incidences(surfaces::AbstractMatrix, system::SystemOrRayBasis)
@@ -328,3 +351,5 @@ function incidences(surfaces::AbstractMatrix, system::SystemOrRayBasis)
     ī = map(/, nī, n)
     return [ni nī i ī]
 end
+
+incidences(system::System{Layout}) = incidences(system.layout, system)

@@ -322,10 +322,10 @@ const optim_scale = 0.05
     v = 2:3
     aberr = [:W040]
     constraint = Dict(:f => system.f)
-    layout, new_system = optimize(surfaces, system, v, constraint, aberr)
+    new_system = optimize(surfaces, system, v, constraint, aberr)
     # optimal lens bending shape factor for conjugate parameter M = 1
     X_min = 2 * (n ^ 2 - 1) / (n + 2)
-    R1, R2 = layout[2:3]
+    R1, R2 = new_system.layout[2:3]
     X = (R2 + R1) / (R2 - R1)
     @test X ≈ X_min rtol = optim_scale
     @test new_system.f ≈ system.f rtol = optim_scale

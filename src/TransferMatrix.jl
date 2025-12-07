@@ -24,3 +24,5 @@ function flatten(M::AbstractMatrix)
     P2 = EBFD - f
     return (; f, EFFD, EBFD, P1, P2)
 end
+
+flatten(system::System) = flatten(system.M)

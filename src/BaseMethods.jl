@@ -1,4 +1,4 @@
-import Base: show, getindex, setindex!, size, IndexStyle, iterate
+import Base: show, getindex, setindex!, size, IndexStyle, iterate, convert
 
 function show(io::IO, system::T) where T <: System
     print(io, "f: ")
@@ -110,3 +110,5 @@ end
 function iterate(rays::T, i::Int = 1) where T <: RayBasis
     i > 2 ? nothing : (getfield(rays, i), i + 1)
 end
+
+convert(::Type{<:Layout}, M::AbstractMatrix) = Layout(M)

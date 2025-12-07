@@ -57,5 +57,13 @@ function optimize(surfaces, system, v, constraints,
         end
         c_prev = c
     end
-    return layout, system
+    return system
+end
+
+function optimize(
+    system::System{Layout}, v::Vector{Int}, constraints::Dict,
+    aberr = fieldnames(Aberration)[1:5],
+    weights = ones(length(aberr))
+)
+    return optimize(system.layout, system, v, constraints, aberr, weights)
 end

@@ -80,10 +80,10 @@ struct Lens <: AbstractArray{Float64, 2}
 end
 
 @kwdef struct Layout{T <: Profile} <: AbstractArray{Float64, 2}
-    M::Matrix{Float64} = Matrix{Float64}(undef, 0, 0)
-    R::Vector{Float64}
-    t::Vector{Float64}
-    n::Vector{Float64}
+    M::Matrix{Float64} = Float64[;;]
+    R::Vector{Float64} = Float64[]
+    t::Vector{Float64} = Float64[]
+    n::Vector{Float64} = Float64[]
     K::Vector{Float64} = Float64[]
     p::Vector{Polynomial} = Polynomial{typeof(zero)}[]
     function Layout{T}(M, R, t, n, K, p) where T <: Profile
@@ -93,6 +93,8 @@ end
         new{T}([R t n K], R, t, n, K, p)
     end
 end
+
+Layout(R, t, n, K, p) = Layout{Aspheric}([R t n K], R, t, n, K, p)
 
 function Layout(M)
     x = size(M, 1)
@@ -108,16 +110,12 @@ function Layout(R, t, n)
     Layout{Spherical}([R t n], R, t, n, zeros(x), fill_poly(x))
 end
 
-function Layout(M, R, t, n, K, p)
-    Layout{iszero(K) && all(==(zero), p) ? Spherical : Aspheric}(M, R, t, n, K, p)
-end
-
 struct Pupil
     D::Float64
     t::Float64
 end
 
-struct System
+struct System{T <: Union{Lens, Layout}, S <: Profile}
     f::Float64
     EBFD::Float64
     EFFD::Float64
@@ -136,6 +134,7 @@ struct System
     M::TransferMatrix
     lens::Lens
     a::Vector{Float64}
+    layout::Layout{S}
 end
 
 struct Aberration

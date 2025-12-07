@@ -59,27 +59,7 @@ end
 
 function _rayplot(
     surfaces::AbstractMatrix,
-    a::AbstractVector,
-    stop::Int,
-    rays::RayBasis;
-    kwargs...
-)
-    raytraceplot(surfaces, a, stop, raypoints(rays)...; kwargs...)
-end
-
-function _rayplot!(
-    surfaces::AbstractMatrix,
-    a::AbstractVector,
-    stop::Int,
-    rays::RayBasis;
-    kwargs...
-)
-    raytraceplot!(surfaces, a, stop, raypoints(rays)...; kwargs...)
-end
-
-function _rayplot(
-    surfaces::AbstractMatrix,
-    system::System;
+    system::SystemOrRayBasis;
     kwargs...
 )
     raytraceplot(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
@@ -87,10 +67,18 @@ end
 
 function _rayplot!(
     surfaces::AbstractMatrix,
-    system::System;
+    system::SystemOrRayBasis;
     kwargs...
 )
     raytraceplot!(surfaces, system.a, system.stop, raypoints(system)...; kwargs...)
+end
+
+function _rayplot(system::System{Layout}; kwargs...)
+    _rayplot(system.layout, system; kwargs...)
+end
+
+function _rayplot!(system::System{Layout}; kwargs...)
+    _rayplot!(system.layout, system; kwargs...)
 end
 
 function wavefan(W::Aberration; k = k, kwargs...)
@@ -273,6 +261,16 @@ end
 function caustic!(surfaces::AbstractMatrix, system::System,
                   k_rays::Int = k_rays; theme = default_plot_theme, kwargs...)
     with_theme(() -> raytraceplot!(surfaces, system, k_rays; kwargs...), theme)
+end
+
+function caustic(system::System{Layout}, k_rays::Int = k_rays;
+                 theme = default_plot_theme, kwargs...)
+    caustic(system.layout, system, k_rays; theme, kwargs...)
+end
+
+function caustic!(system::System{Layout}, k_rays::Int = k_rays;
+                 theme = default_plot_theme, kwargs...)
+    caustic!(system.layout, system, k_rays; theme, kwargs...)
 end
 
 # plots ray bundles

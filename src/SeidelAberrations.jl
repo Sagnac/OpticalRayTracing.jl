@@ -52,6 +52,12 @@ function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,
                petzval, medial, tangential, λ, sign(chief.y[end]))
 end
 
+function aberrations(system::System{Layout},
+                     λ::Float64 = λ,
+                     δn::Vector{Float64} = zeros(size(system.layout, 1)))
+    aberrations(system.layout, system, λ, δn)
+end
+
 function (W::Aberration)(ρ, θ, H)
     H = abs(H)
     H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
@@ -118,7 +124,7 @@ function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: AbstractRay
     RayError{T}(W, s.marginal.nu[end], W.field_sign)
 end
 
-function TSA(surfaces::AbstractMatrix, system::System, k_rays::Int = k_rays)
+function TSA(surfaces::AbstractMatrix, system, k_rays::Int = k_rays)
     paraxial_marginal = system.marginal
     real_marginal = trace_marginal_ray(surfaces, system)
     real_chief = trace_chief_ray(surfaces, system)
@@ -138,6 +144,8 @@ function TSA(surfaces::AbstractMatrix, system::System, k_rays::Int = k_rays)
     end
     return y_XP, ε
 end
+
+TSA(system::System, k_rays::Int = k_rays) = TSA(system.layout, system, k_rays)
 
 function SA(y::Vector, ε::Vector, degree::Int)
     if iseven(degree) || degree < 3
