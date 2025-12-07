@@ -319,10 +319,12 @@ function plot!(p::RayTracePlot{<:Tuple{<:AbstractMatrix, <:AbstractVector, Int,
     for (i, r) in pairs(R)
         z_vertex = z_surfaces[i]
         ai = a[i]
-        z_max = r - sign(r) * sqrt(max(r ^ 2 - ai ^ 2, 0.0)) + z_vertex
+        ai2 = ai ^ 2
+        KP1 = surfaces isa Layout ? 1.0 + surfaces.K[i+1] : 1.0
+        z_max = ai2 / (r + sign(r) * sqrt(max(r ^ 2 - ai2 * KP1, 0.0))) + z_vertex
         if isfinite(r)
             zi = range(z_vertex, z_max, 70)
-            y_surface = @. sqrt(abs(r ^ 2 - (abs(zi - z_vertex) - abs(r)) ^ 2))
+            y_surface = @. √(2abs((zi - z_vertex) * r) - (zi - z_vertex) ^ 2 * KP1)
         else
             z_max = z_vertex
             zi = [z_vertex, z_vertex]
