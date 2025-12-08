@@ -6,7 +6,7 @@ using OpticalRayTracing: System, RayBasis, SystemOrRayBasis, Aberration, k_rays,
                          surface_to_focus, RealRayError, spot_rays
 
 import OpticalRayTracing: rayplot, rayplot!, wavefan, rayfan,
-                          field_curves, percent_distortion, spot_size, caustic
+                          field_curves, percent_distortion, spot_diagram, caustic
 
 import Makie: plot!
 
@@ -199,7 +199,7 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
     return fig
 end
 
-function spot_size(W::Aberration, s::SystemOrRayBasis;
+function spot_diagram(W::Aberration, s::SystemOrRayBasis;
                    k = spot_rays, kwargs...)
     fig = Figure()
     axis = Axis(fig[1,1];
@@ -241,7 +241,7 @@ function spot_size(W::Aberration, s::SystemOrRayBasis;
     return fig
 end
 
-function spot_size(ε::RealRayError; kwargs...)
+function spot_diagram(ε::RealRayError; kwargs...)
     axis = (
         title = @sprintf("H = %.2f\nRMS Spot Size = %.5f", ε.H, ε.RMS),
         xlabel = L"\varepsilon_X",
