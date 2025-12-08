@@ -23,6 +23,7 @@ const pages = [
     "index.md",
     "Paraxial Ray Tracing.md",
     "Real Ray Tracing.md",
+    "Pupil Sampling.md",
     "Aspheric Surfaces.md",
     "Vignetting Analysis.md",
     "Seidel Aberrations.md",

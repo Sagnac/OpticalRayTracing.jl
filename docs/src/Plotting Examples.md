@@ -18,7 +18,7 @@ using GLMakie
 surface_color = :white
 ray_colors = (:cyan, :red)
 
-rayplot(surfaces, system; theme = theme_black(), surface_color, ray_colors)
+rayplot(system; theme = theme_black(), surface_color, ray_colors)
 
 rays = raytrace(system, -24.0, -1.5 * system.f)
 fig = rayplot(rays)
@@ -28,7 +28,7 @@ rayplot!(rays)
 surface = [Inf 0.0 1.0; -100.0 0.0 -1.0]
 system = solve(surface, fill(30.0, 2), 21.0)
 # traces real rays
-fig = caustic(surface, system; theme = theme_black(), surface_color)
+fig = caustic(system; theme = theme_black(), surface_color)
 ```
 
 ![rayplot](assets/images/rayplot.png)
@@ -46,12 +46,12 @@ wavefan(W)
 rayfan(W, system)
 field_curves(W, system)
 percent_distortion(W, system)
-spot_size(W, system)
+spot_diagram(W, system)
+spot_diagram(full_trace(system, 0.0)) # using real rays
 ```
 
 |    |    |
 |----|----|
 |![wavefan](assets/images/wavefan.png)|![rayfan](assets/images/rayfan.png)|
 |![field_curves](assets/images/field_curves.png)|![percent_distortion](assets/images/percent_distortion.png)|
-
-![spot_size](assets/images/spot_size.png)
+|![spot_diagram](assets/images/spot_diagram.png)|![real_spot_diagram](assets/images/real_spot_diagram.png)|

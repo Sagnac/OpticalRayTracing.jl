@@ -16,14 +16,12 @@ constraints = Dict(:f => system.f)
 # if not provided a simple mean over the five Seidel coefficients is taken
 aberr = [:W040, :W131, :W222]
 weights = [2.0, 2.0, 1.0]
-layout, new_system = optimize(surfaces, system, v, constraints, aberr, weights)
-nothing # hide
+new_system = optimize(system, v, constraints, aberr, weights)
 ```
 
 ```@repl optimization
-layout
-new_system
-w = aberrations(layout, new_system)
+new_system.layout
+w = aberrations(new_system)
 ```
 
 Note that this employs a rudimentary optimization procedure meant to provide a rough initial numerical solution; as a result the constraint values might not be met exactly.

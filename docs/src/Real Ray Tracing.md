@@ -13,9 +13,9 @@ U = 0.05
 raytrace(surfaces, y, U, RealRay)
 ```
 
-And this finds the real marginal ray for the given surfaces and system.
+And this finds the real marginal ray.
 ```@example real_ray_tracing
-trace_marginal_ray(surfaces, system)
+trace_marginal_ray(system)
 ```
 
 In addition, the amount of spherical aberration produced from a real ray trace can be quantifed.
@@ -23,7 +23,7 @@ In addition, the amount of spherical aberration produced from a real ray trace c
 The following computes the transverse ray errors and returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.
 
 ```@example real_ray_tracing
-y, ε = TSA(surfaces, system)
+y, ε = TSA(system)
 ε[end]
 ```
 

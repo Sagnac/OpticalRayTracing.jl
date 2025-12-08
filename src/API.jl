@@ -34,7 +34,7 @@ See also: [`compute_surfaces`](@ref).
 Lens
 
 """
-    aberrations(surfaces, system, [λ], [δn])
+    aberrations(system, [λ], [δn])
 
 Compute the third order wavefront error coefficients based on Seidel sums for a given system or ray basis. Results are in waves at the d-line by default. The dispersion vector `δn` allows calculation of chromatic aberration.
 
@@ -45,7 +45,7 @@ The coefficients assume a positive valued field.
 aberrations
 
 """
-    caustic(surfaces, system, [k_rays::Int]; [theme], kwargs...)
+    caustic(system, [k_rays::Int]; [theme], kwargs...)
 
 Traces real rays and plots the caustic extended to either the paraxial or marginal focus. Requires using a `Makie` backend. `k_rays` controls how many rays are plotted.
 
@@ -79,7 +79,7 @@ Plot the third order longitudinal astigmatic field curves. Requires using a `Mak
 
 `P`, `T`, & `S` on the plot refer to the Petzval field, the Tangential field, and the Sagittal field.
 
-See also: [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
+See also: [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_diagram`](@ref), [`wavefan`](@ref).
 """
 field_curves
 
@@ -91,14 +91,27 @@ Return the cardinal points for the input vertex matrix.
 flatten
 
 """
-    incidences(surfaces, system)
+    full_trace(system, H, [k_rays], [focus] = BFD)
+
+Sample the pupil using real rays to compute the transverse ray errors at the `focus` position along with the RMS spot size. Returns a `RealRayError` holding the `x` & `y` ray error vectors along with the corresponding `r` & `t` pupil polar coordinates.
+
+The RMS spot size is computed from the centroid rather than the chief ray.
+
+`H` is the normalized field parameter while `k_rays` refers to the number of rays.
+
+See also: [`raytrace`](@ref), [`wavegrad`](@ref).
+"""
+full_trace
+
+"""
+    incidences(system)
 
 Compute the paraxial incidence angles over the system. Returns a four column matrix with the first two columns referring to the optical angles `ni` & `nī` for the marginal & chief ray, respectively, and the last two columns referring to the physical angles `i`, `ī`.
 """
 incidences
 
 """
-    optimize(surfaces, system, v, constraints, [aberr], [weights])
+    optimize(system, v, constraints, [aberr], [weights])
 
 Optimize an optical system such that the surface layout over the indices `v` minimizes the weighted aberrations provided in `aberr` subject to the given `constraints`.
 
@@ -113,7 +126,7 @@ Plot the percent distortion for the given system of aberrations. Requires using 
 
 `H` on the plot refers to the normalized field parameter.
 
-See also: [`field_curves`](@ref), [`rayfan`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
+See also: [`field_curves`](@ref), [`rayfan`](@ref), [`spot_diagram`](@ref), [`wavefan`](@ref).
 """
 percent_distortion
 
@@ -124,13 +137,13 @@ Plot the third order ray intercept curves for the given system of aberrations. R
 
 `H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
 
-See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`spot_size`](@ref), [`wavefan`](@ref).
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`spot_diagram`](@ref), [`wavefan`](@ref).
 """
 rayfan
 
 """
     rayplot(system)
-    rayplot(surfaces, a, system)
+    rayplot(surfaces, ray_basis)
 
 Plots the given system or ray bundle using `Makie`; requires installation of a `Makie` backend such as `GLMakie`.
 
@@ -140,7 +153,7 @@ rayplot
 
 """
     rayplot!(system)
-    rayplot!(surfaces, a, system)
+    rayplot!(surfaces, ray_basis)
 
 Mutating version of `rayplot` which draws on top of the active figure.
 
@@ -177,7 +190,15 @@ See also: [`solve`](@ref), [`incidences`](@ref).
 
 Trace a real ray through the surfaces with initial height `y` and initial angle `U`.
 
-See also: [`trace_marginal_ray`](@ref).
+----
+
+    raytrace(surfaces::AbstractMatrix, y, x, U, V, ::Type{Vector{RealRay}})
+
+Trace a real ray through the lens in three dimensions. `U` refers to the angle the ray makes with the optical z-axis in the y-direction and `V` to the angle it makes with the z-axis in the x-direction.
+
+This method returns a two-tuple of vectors holding the x and y coordinates at each surface.
+
+See also: [`trace_marginal_ray`](@ref), [`full_trace`](@ref).
 """
 raytrace
 
@@ -198,7 +219,7 @@ Fits spherical aberration transverse ray errors to a polynomial of the given `de
 SA
 
 """
-    TSA(surfaces, system, [k_rays::Int])
+    TSA(system, [k_rays::Int])
 
 Computes the transverse ray aberration errors for spherical aberration using a real ray trace. `k_rays` controls how many rays are plotted. Returns vectors with the ray heights at the exit pupil and the ray errors at the paraxial plane.
 
@@ -215,6 +236,7 @@ scale!
 
 """
     solve(surfaces::Matrix, a::Vector, h′::Float64)
+    solve(layout::Layout, a, h′)
     solve(lens::Lens, a, h′)
 
 Solve a lens, returning a `System` holding the relevant properties. `a` denotes the clear aperture semi-diameters while `h′` indicates the image height.
@@ -237,22 +259,23 @@ Fields are:
 * `P2`: back principal plane location w.r.t the back vertex;
 * `PN`: nodal point shift from the principal points;
 * `M`: the vertex matrix;
-* `lens`: `Lens` of the system.
+* `lens`: `Lens` of the system;
+* `layout`: the surface layout / prescription if specified.
 
 See also: [`raytrace`](@ref), [`incidences`](@ref).
 """
 solve
 
 """
-    spot_size(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    spot_diagram(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
 
 Plot the spot diagram over the image plane using third order aberration data. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
 
 `H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
 
-See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref).
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_diagram`](@ref).
 """
-spot_size
+spot_diagram
 
 """
     trace_chief_ray(lens::Lens, stop::Int, marginal::ParaxialRay{Marginal}, h′)
@@ -263,7 +286,7 @@ See also: [`solve`](@ref).
 
 ----
 
-    trace_chief_ray(surfaces, system::System; atol = sqrt(eps()))
+    trace_chief_ray(system::System; atol = sqrt(eps()))
 
 Find the real chief ray for the given surfaces and system.
 
@@ -280,7 +303,7 @@ See also: [`solve`](@ref).
 
 ----
 
-    trace_marginal_ray(surfaces, system::System; atol = sqrt(eps()))
+    trace_marginal_ray(system::System; atol = sqrt(eps()))
 
 Find the real marginal ray for the given surfaces and system.
 
@@ -311,11 +334,8 @@ Determines the maximum FOVs corresponding to those sizes as well as returning a 
 
 The fields of view are stored in the `FOV` field with rows corresponding to the unvignetted, half-vignetted, and fully vignetted cases and the columns corresponding to the full fields of view in degrees, paraxial chief ray slopes, and image heights, respectively.
 
-----
+`system` can also be a traced `RayBasis` corresponding to the marginal & chief rays of a non-collimated beam for an object not at infinity.
 
-    vignetting(rays::RayBasis, system::System, a::AbstractVector = system.a)
-
-Same as above, but for a traced `RayBasis` corresponding to the marginal & chief rays of a non-collimated beam / an object not at infinity.
 """
 vignetting
 
@@ -326,6 +346,15 @@ Plot the input aberrations as a a composite wavefront error over the pupil in th
 
 `H` on the plot refers to the normalized field parameter and can be adjusted with a slider.
 
-See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_size`](@ref).
+See also: [`field_curves`](@ref), [`percent_distortion`](@ref), [`rayfan`](@ref), [`spot_diagram`](@ref).
 """
 wavefan
+
+"""
+    wavegrad(ε::RealRayError, [λ] = 587.5618e-6)
+
+Return a two-tuple with the wavefront error partial derivative vectors in `x` & `y`.
+
+See also: [`full_trace`](@ref).
+"""
+wavegrad

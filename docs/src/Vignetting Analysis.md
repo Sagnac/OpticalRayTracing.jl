@@ -28,4 +28,4 @@ vig = vignetting(system)
 vig.FOV
 ```
 
-There is support for analyzing a traced `RayBasis` instead using the `vignetting(rays::RayBasis, system::System, a::AbstractVector)` method.
+There is also support for analyzing a traced `RayBasis`.

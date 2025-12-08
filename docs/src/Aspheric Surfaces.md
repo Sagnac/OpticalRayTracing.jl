@@ -17,5 +17,5 @@ K = [1.0, -0.7] # elliptical profile, prolate spheroid surface
 p = [zero, y -> y ^ 4 / R[2] ^ 4] # fourth order surface sagittal correction
 # this constructor also supports specifying the full 4 column matrix directly
 # instead of keyword arguments
-surfaces = Layout(; R, t, n, K, p)
+surfaces = Layout{Aspheric}(; R, t, n, K, p)
 ```
