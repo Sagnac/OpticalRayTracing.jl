@@ -97,6 +97,7 @@ end
 Layout(R, t, n, K, p) = Layout{Aspheric}([R t n K], R, t, n, K, p)
 
 function Layout(M)
+    M = @view M[:,1:3]
     x = size(M, 1)
     K = zeros(x)
     p = fill_poly(x)
