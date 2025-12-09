@@ -76,6 +76,10 @@ function (W::Aberration)(ρ, θ, H)
 end
 
 function ray_error(ε, x, y, H)
+    hypot(x, y) ≤ 1.0 || throw(DomainError((x, y), "Domain: hypot(x, y) ≤ 1.0"))
+    H = abs(H)
+    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
+    H *= ε.field_sign
     (; W040, W131, W222, W220, W311, W020, W111, λ) = ε.W
     (; nu) = ε
     ε1_y = 4 * W040 * (x ^ 2 * y + y ^ 3)
@@ -97,26 +101,11 @@ function ray_error(ε, x, y, H)
     return ε_x, ε_y
 end
 
-function (ε_y::RayError{Tangential})(y, H)
-    H = abs(H)
-    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
-    H *= ε_y.field_sign
-    ray_error(ε_y, 0, y, H)[2]
-end
+(ε_y::RayError{Tangential})(y, H) = ray_error(ε_y, 0, y, H)[2]
 
-function (ε_x::RayError{Sagittal})(x, H)
-    H = abs(H)
-    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
-    H *= ε_x.field_sign
-    ray_error(ε_x, x, 0, H)[1]
-end
+(ε_x::RayError{Sagittal})(x, H) = ray_error(ε_x, x, 0, H)[1]
 
-function (ε::RayError{Skew})(x, y, H)
-    H = abs(H)
-    H ≤ 1.0 || throw(DomainError(H, "Domain: |H| ≤ 1.0"))
-    H *= ε.field_sign
-    ray_error(ε, x, y, H)
-end
+(ε::RayError{Skew})(x, y, H) = ray_error(ε, x, y, H)
 
 (ε::RayError{Skew})((x, y)::NTuple{2, Float64}, H) = ε(x, y, H)
 
