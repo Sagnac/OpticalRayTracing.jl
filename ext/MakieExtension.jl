@@ -118,7 +118,7 @@ function wavefan(W::Aberration; k = k, kwargs...)
     return fig
 end
 
-function rayfan(W::Aberration, s::SystemOrRayBasis, ; k = k, kwargs...)
+function rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
     fig = Figure()
     tangential_axis = Axis(fig[1,1];
         title = "Transverse Ray Error\nTangential",
@@ -248,7 +248,7 @@ function spot_diagram(ε::RealRayError; kwargs...)
         ylabel = L"\varepsilon_Y",
         aspect = DataAspect()
     )
-    plot = scatter(vec(ε.x), vec(ε.y); axis, kwargs...)
+    plot = scatter(ε.x, ε.y; axis, kwargs...)
     DataInspector()
     return plot
 end
