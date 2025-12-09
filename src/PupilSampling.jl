@@ -151,6 +151,11 @@ function full_trace(surfaces::Layout, system::RayBasis, k_rays = spot_rays,
     full_trace(surfaces, system, 1.0, k_rays, focus)
 end
 
+function full_trace(surfaces::AbstractMatrix, system::RayBasis, k_rays = spot_rays,
+                    focus = system.marginal.z[end] - system.marginal.z[end-1])
+    full_trace(Layout(surfaces), system, k_rays, focus)
+end
+
 function full_trace(system::System, H::Float64,
                     k_rays::Int = spot_rays,
                     focus = system.marginal.z[end] - system.marginal.z[end-1])

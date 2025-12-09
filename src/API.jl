@@ -92,6 +92,7 @@ flatten
 
 """
     full_trace(system, H, [k_rays], [focus] = BFD)
+    full_trace(surfaces, ray_basis)
 
 Sample the pupil using real rays to compute the transverse ray errors at the `focus` position along with the RMS spot size. Returns a `RealRayError` holding the `x` & `y` ray error vectors along with the corresponding `r` & `t` pupil polar coordinates.
 
