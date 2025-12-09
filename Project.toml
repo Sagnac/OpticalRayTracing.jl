@@ -1,7 +1,7 @@
 name = "OpticalRayTracing"
 uuid = "ebaba64e-82fa-4c4f-87ec-8b3331953780"
 authors = ["Sagnac"]
-version = "0.8.0"
+version = "1.0.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
