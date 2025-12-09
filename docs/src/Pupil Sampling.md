@@ -6,7 +6,7 @@ Real rays can be traced over the entirety of the pupil rather than just the meri
 
 ```
 
-```@example pupil_sampling
+```@repl pupil_sampling
 # method signature: full_trace(system, H, k_rays, focus)
 ε = full_trace(system, 0.0) # on-axis
 ```
