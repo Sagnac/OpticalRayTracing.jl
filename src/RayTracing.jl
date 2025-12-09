@@ -119,8 +119,7 @@ function stop_loss(surfaces, y, u, stop, a_stop, ::Type{Marginal})
     return ray, ray.y[begin+stop] - a_stop
 end
 
-function stop_loss(surfaces, ȳ′, ū′, t, stop, ::Type{Chief})
-    ȳ′ = transfer(ȳ′, ū′, t, RealRay)
+function stop_loss(surfaces, ȳ′, ū′, stop, ::Type{Chief})
     ray = raytrace(surfaces, ȳ′, ū′, RealRay)
     return ray, ray.y[begin+stop]
 end
@@ -264,25 +263,26 @@ function trace_chief_ray(lens::Lens, stop::Int,
 end
 
 function trace_chief_ray(surfaces, system::SystemOrRayBasis; atol = sqrt(eps()))
+    (; chief, marginal) = system
     rev_R = -[Inf; @view(surfaces[end:-1:2, 1])]
-    rev_t = @view surfaces[end:-1:1, 2]
+    rev_t = surfaces[end:-1:1, 2]
     rev_n = @view surfaces[end:-1:1, 3]
+    BFD = marginal.z[end] - marginal.z[end-1]
+    rev_t[1] = BFD
     if surfaces isa Layout
         (; K, p) = surfaces
         rev_surfaces = Layout(rev_R, rev_t, rev_n, reverse(K), reverse(p))
     else
         rev_surfaces = Layout([rev_R rev_t rev_n])
     end
-    (; chief, marginal) = system
     stop = length(rev_R) - system.stop
     ȳ′ = chief.y[end]
     ū′ = -chief.u[end]
-    BFD = marginal.z[end] - marginal.z[end-1]
-    ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, BFD, stop, Chief)
+    ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, stop, Chief)
     while abs(y_stop) > atol
-        δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, BFD, stop, Chief)[2]
+        δy = stop_loss(rev_surfaces, ȳ′, ū′ + ϵ, stop, Chief)[2]
         ū′ -= y_stop * ϵ / (δy - y_stop)
-        ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, BFD, stop, Chief)
+        ray, y_stop = stop_loss(rev_surfaces, ȳ′, ū′, stop, Chief)
     end
     ȳ = [0.0; reverse(ray.y)]
     ȳ[end] = ȳ′
