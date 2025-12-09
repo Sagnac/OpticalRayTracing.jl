@@ -156,10 +156,10 @@ function rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
 end
 
 function field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
-    (; W220P, W220, W220T, W222, λ) = W
+    (; W220P, W220, W220T, λ) = W
     nu = s.marginal.nu[end]
     u = s.marginal.u[end]
-    α = -inv(nu * u) * λ
+    α = -2inv(nu * u) * λ
     fig = Figure()
     axis = Axis(fig[1,1];
         title = "Longitudinal Astigmatic Field Curves",
