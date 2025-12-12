@@ -138,7 +138,9 @@ struct System{T <: Union{Lens, Layout}, S <: Profile}
     layout::Layout{S}
 end
 
-struct Aberration
+const SystemOrRayBasis = Union{System, RayBasis}
+
+struct Aberration{T <: SystemOrRayBasis}
     W040::Float64
     W131::Float64
     W222::Float64
@@ -161,6 +163,7 @@ struct Aberration
     tangential::Vector{Float64}
     λ::Float64
     field_sign::Int
+    system::T
 end
 
 struct Vignetting
@@ -187,7 +190,5 @@ struct RealRayError
     H::Float64
     RMS::Float64
 end
-
-const SystemOrRayBasis = Union{System, RayBasis}
 
 const OpticalMatrix = Union{Lens, Layout, TransferMatrix}

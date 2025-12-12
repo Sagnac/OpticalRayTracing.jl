@@ -118,7 +118,7 @@ function wavefan(W::Aberration; k = k, kwargs...)
     return fig
 end
 
-function rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+function rayfan(W::Aberration; k = k, kwargs...)
     fig = Figure()
     tangential_axis = Axis(fig[1,1];
         title = "Transverse Ray Error\nTangential",
@@ -145,8 +145,8 @@ function rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
     end
     grid[1,1] = Label(fig, @lift(@sprintf("H: %.3f", $H)))
     y = range(-1.0, 1.0, k)
-    ε_y = RayError{Tangential}(W, s)
-    ε_x = RayError{Sagittal}(W, s)
+    ε_y = RayError{Tangential}(W)
+    ε_x = RayError{Sagittal}(W)
     εy = @lift ε_y.(y, $H)
     εx = @lift ε_x.(x, $H)
     lines!(tangential_axis, y, εy; color = :black, kwargs...)
@@ -155,10 +155,10 @@ function rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
     return fig
 end
 
-function field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
-    (; W220P, W220, W220T, λ) = W
-    nu = s.marginal.nu[end]
-    u = s.marginal.u[end]
+function field_curves(W::Aberration; k = k, kwargs...)
+    (; W220P, W220, W220T, λ, system) = W
+    nu = system.marginal.nu[end]
+    u = system.marginal.u[end]
     α = -2inv(nu * u) * λ
     fig = Figure()
     axis = Axis(fig[1,1];
@@ -181,10 +181,10 @@ function field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
     return fig
 end
 
-function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
-    (; W311, λ) = W
-    ȳ = s.chief.y[end]
-    n′u′ = s.marginal.nu[end]
+function percent_distortion(W::Aberration; k = k, kwargs...)
+    (; W311, λ, system) = W
+    ȳ = system.chief.y[end]
+    n′u′ = system.marginal.nu[end]
     fig = Figure()
     axis = Axis(fig[1,1];
         title = "Percent Distortion",
@@ -199,8 +199,7 @@ function percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...
     return fig
 end
 
-function spot_diagram(W::Aberration, s::SystemOrRayBasis;
-                   k = spot_rays, kwargs...)
+function spot_diagram(W::Aberration; k = spot_rays, kwargs...)
     fig = Figure()
     axis = Axis(fig[1,1];
         xlabel = L"\varepsilon_X",
@@ -222,9 +221,9 @@ function spot_diagram(W::Aberration, s::SystemOrRayBasis;
     # by taking advantage of rotational symmetry
     x = y = range(-1.0, 1.0, k)
     lattice = [(xᵢ, yᵢ) for xᵢ ∈ x for yᵢ ∈ y if hypot(xᵢ, yᵢ) ≤ 1.0]
-    ε = RayError{Skew}(W, s)
-    ε_x = RayError{Sagittal}(W, s)
-    ε_y = RayError{Tangential}(W, s)
+    ε = RayError{Skew}(W)
+    ε_x = RayError{Sagittal}(W)
+    ε_y = RayError{Tangential}(W)
     ε_x_i = @lift ε_x.(x, $H)
     ε_y_i = @lift ε_y.(y, $H)
     εx_εy = @lift ε.(lattice, $H)

@@ -49,7 +49,7 @@ function aberrations(surfaces::AbstractMatrix, system::SystemOrRayBasis,
     W111 = sum(lateral)
     Aberration(W040, W131, W222, W220, W311, W020, W111, W220P, W220M, W220T,
                spherical, coma, astigmatism, sagittal, distortion, axial, lateral,
-               petzval, medial, tangential, λ, sign(chief.y[end]))
+               petzval, medial, tangential, λ, Int(sign(chief.y[end])), system)
 end
 
 function aberrations(system::System{Layout},
@@ -109,8 +109,8 @@ end
 
 (ε::RayError{Skew})((x, y)::NTuple{2, Float64}, H) = ε(x, y, H)
 
-function RayError{T}(W::Aberration, s::SystemOrRayBasis) where T <: AbstractRay
-    RayError{T}(W, s.marginal.nu[end], W.field_sign)
+function RayError{T}(W::Aberration) where T <: AbstractRay
+    RayError{T}(W, W.system.marginal.nu[end], W.field_sign)
 end
 
 function TSA(surfaces::AbstractMatrix, system, k_rays::Int = k_rays)

@@ -43,10 +43,10 @@ The fan plots are interactive and include a slider which allows dynamic adjustme
 using GLMakie
 
 wavefan(W)
-rayfan(W, system)
-field_curves(W, system)
-percent_distortion(W, system)
-spot_diagram(W, system)
+rayfan(W)
+field_curves(W)
+percent_distortion(W)
+spot_diagram(W)
 spot_diagram(full_trace(system, 0.0)) # using real rays
 ```
 

@@ -289,11 +289,11 @@ const ray_scale = 1e-3
 
 @testset "transverse ray errors" begin
     ΔW = aberrations(surfaces, system)
-    ε_y = RayError{Tangential}(ΔW, system)
-    ε_x = RayError{Sagittal}(ΔW, system)
+    ε_y = RayError{Tangential}(ΔW)
+    ε_x = RayError{Sagittal}(ΔW)
     @test ε_y(1.0, 1.0) ≈ +(W040, 3W131, 3W222, W220P, W311) atol = ray_scale
     @test ε_x(1.0, 1.0) ≈ +(W040, W222, W220P) atol = ray_scale
-    ε = RayError{Skew}(ΔW, system)
+    ε = RayError{Skew}(ΔW)
     ρ = rand()
     θ = 2π * rand()
     H = rand()

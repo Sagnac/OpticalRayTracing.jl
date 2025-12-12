@@ -71,7 +71,7 @@ See also: [`Lens`](@ref).
 compute_surfaces
 
 """
-    field_curves(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    field_curves(W::Aberration; k = k, kwargs...)
 
 Plot the third order longitudinal astigmatic field curves. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
 
@@ -121,7 +121,7 @@ See also: [`solve`](@ref).
 optimize
 
 """
-    percent_distortion(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    percent_distortion(W::Aberration; k = k, kwargs...)
 
 Plot the percent distortion for the given system of aberrations. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
 
@@ -132,7 +132,7 @@ See also: [`field_curves`](@ref), [`rayfan`](@ref), [`spot_diagram`](@ref), [`wa
 percent_distortion
 
 """
-    rayfan(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    rayfan(W::Aberration; k = k, kwargs...)
 
 Plot the third order ray intercept curves for the given system of aberrations. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
 
@@ -268,7 +268,7 @@ See also: [`raytrace`](@ref), [`incidences`](@ref).
 solve
 
 """
-    spot_diagram(W::Aberration, s::SystemOrRayBasis; k = k, kwargs...)
+    spot_diagram(W::Aberration; k = k, kwargs...)
 
 Plot the spot diagram over the image plane using third order aberration data. Requires using a `Makie` backend. `k` controls the discretization / number of plot elements.
 

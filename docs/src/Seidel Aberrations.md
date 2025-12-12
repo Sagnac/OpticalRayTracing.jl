@@ -20,9 +20,9 @@ x = 0.3
 y = 0.4
 ρ = 0.5
 θ = π/4
-εx = RayError{Tangential}(W, system)
-εy = RayError{Sagittal}(W, system)
-ε = RayError{Skew}(W, system)
+εx = RayError{Tangential}(W)
+εy = RayError{Sagittal}(W)
+ε = RayError{Skew}(W)
 nothing # hide
 ```
 
